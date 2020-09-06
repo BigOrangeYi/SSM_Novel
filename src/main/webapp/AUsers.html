@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理用户</title>
+    <style type="text/css">
+        table
+        {
+            border-collapse: collapse;
+            margin: 0 auto;
+            text-align: center;
+        }
+        table td, table th
+        {
+            border: 1px solid #cad9ea;
+            color: #666;
+            height: 30px;
+            width: 300px;
+        }
+        table thead th
+        {
+            background-color: #CCE8EB;
+            width: 100px;
+        }
+        table tr:nth-child(odd)
+        {
+            background: #fff;
+        }
+        table tr:nth-child(even)
+        {
+            background: #F5FAFA;
+        }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<div id="Index">
+    <br><br><br>
+<div align="center"><a href="AdminIndex.html">返回管理首页</a><h3>用户管理</h3></div>
+    <input type="text" v-model="SearchText"><input type="button" value="搜索" @click="Search">
+    <table v-if="SearchResult!=null&&SearchResult!=''">
+        <tr><td colspan="8" @click="SearchResult=''">收起结果</td></tr>
+        <tr ><td>id</td><td>phone</td><td>password</td><td>readername</td><td>headimg</td><td>headimg_ath</td><td colspan="2">操作</td></tr>
+        <tr v-for="(Result,ResultNum) in SearchResult">
+            <td contenteditable="true" @blur="Result.id=$event.target.innerText">{{Result.id}}</td>
+            <td contenteditable="true" @blur="Result.phone=$event.target.innerText">{{Result.phone}}</td>
+            <td contenteditable="true" @blur="Result.password=$event.target.innerText">{{Result.password}}</td>
+            <td contenteditable="true" @blur="Result.readername=$event.target.innerText">{{Result.readername}}</td>
+            <td><img class="img-circle" width="63px" height="63px" :src="Result.headimg"></td>
+            <td contenteditable="true" @blur="Result.headimg=$event.target.innerText">{{Result.headimg}}</td>
+            <td @click="ADeleteUsers(Result.id)">确定删除</td>
+            <td @click="AUpdateUsers(Result.id,Result.phone,Result.password,Result.readername,Result.headimg)">保存修改</td>
+        </tr>
+    </table>
+    <br>   <br>   <br>   <br>
+<table>
+    <tr ><td>id</td><td>phone</td><td>password</td><td>readername</td><td>headimg</td><td>headimg_ath</td><td colspan="2">操作</td></tr>
+    <tr v-for="(User,UserNum) in Users">
+        <td >{{User.id}}</td>
+        <td contenteditable="true" @blur="User.phone=$event.target.innerText">{{User.phone}}</td>
+        <td contenteditable="true" @blur="User.password=$event.target.innerText">{{User.password}}</td>
+        <td contenteditable="true" @blur="User.readername=$event.target.innerText">{{User.readername}}</td>
+        <td><img class="img-circle" width="63px" height="63px" :src="User.headimg"></td>
+        <td contenteditable="true" @blur="User.headimg=$event.target.innerText">{{User.headimg}}</td>
+        <td @click="ADeleteUsers(User.id)">确定删除</td>
+        <td @click="AUpdateUsers(User.id,User.phone,User.password,User.readername,User.headimg)">保存修改</td>
+    </tr>
+</table>
+    <br>
+    <div align="center">
+                <a @click="Pre">上一页</a>
+  第<input v-model="VPageNum" type="number" size="3">页<input type="button" value="跳转" @click="todo(VPageNum)" >
+                <a @click="Next">下一页</a>
+    </div>
+</div>
+<script>
+    var PageNum=1;
+    var PageSize=6;
+    $(function () {
+       vindex.ASelectAllUsers(PageNum,PageSize);
+    });
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+            SearchText:'',
+            SearchResult:[],
+            VPageNum:'',
+            Users:[]
+        },
+        mounted: function (){},
+        methods:{
+            Search:function(){
+              if (vindex.SearchText != null && vindex.SearchText != '') {
+                  vindex.SearchResult=[];
+                  axios.post('ASelectOneUsers.do', {
+                      phone:vindex.SearchText,
+                      readername:vindex.SearchText
+                  }).then(function (response) {
+                      var temp = response.data;
+                      console.log(temp);
+                      for (var i = 0; i < temp.length; i++)
+                          vindex.SearchResult.push({
+                              id: temp[i].id,
+                              phone: temp[i].phone,
+                              password: temp[i].password,
+                              readername: temp[i].readername,
+                              headimg: temp[i].headimg
+                          })
+                  })
+              }
+            },
+            Pre:function(){
+                if (PageNum > 1)
+                {
+                    vindex.VPageNum=--PageNum;
+                    vindex.ASelectAllUsers(PageNum,PageSize);
+                }
+            },
+            Next:function(){
+                if (vindex.Users.length == 6)
+                {
+                    vindex.VPageNum=++PageNum;
+                    vindex.ASelectAllUsers(PageNum,PageSize);
+                }
+            },
+            todo:function(Num){
+                if (Num > 0)
+                {
+                    PageNum=Num;
+                    vindex.ASelectAllUsers(PageNum,PageSize);
+                }
+            },
+            AUpdateUsers:function(id,phone,password,readername,headimg){
+                axios.post('AUpdateUsers.do', {
+                    id:id,
+                    phone:phone,
+                    password:password,
+                    readername:readername,
+                    headimg:headimg
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("修改成功");
+                        vindex.ASelectAllUsers(PageNum,PageSize);
+                    }
+                    else alert("修改失败")
+                });
+
+            },
+            ADeleteUsers:function(id){
+                axios.post('ADeleteUsers.do', {id:id}).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                   if (temp==1){
+                       alert("删除成功");
+                       vindex.ASelectAllUsers(PageNum,PageSize);
+                   }
+                   else alert("删除失败")
+                });
+            },
+            ASelectAllUsers:function (PageNum,PageSize) {
+                vindex.Users=[];
+                axios.post('ASelectAllUsers.do', {
+                    PageNum:PageNum,
+                    PageSize:PageSize
+                }).then(function (response) {
+                var temp = response.data;console.log(temp);
+                for (var i = 0; i < temp.length; i++)
+                    vindex.Users.push({
+                        id: temp[i].id,
+                        phone: temp[i].phone,
+                        password: temp[i].password,
+                        readername: temp[i].readername,
+                        headimg:temp[i].headimg
+                    });
+            })
+            }
+        }
+    });
+</script>
+</body>
+</html>

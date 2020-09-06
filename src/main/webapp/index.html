@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <style type="text/css">
+
+        img {
+            cursor: pointer;
+            transition: all 0.6s;
+        }
+
+        li {
+            list-style-type: none;
+            display: inline
+        }
+
+        img:hover {
+            transform: scale(1.4);
+        }
+
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div id="Index">
+
+    <nav class="nav nav-tabs navbar-fixed-top navbar-inverse navbar" role="navigation"><!--导航栏-->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-1  col-xs-1"><a href="index.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">首页</font></h3></a></div>
+                <div class="col-md-1 col-xs-1"><a href="books.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">书库</font></h3></a></div>
+                <div class="col-md-2  col-xs-2"><a href="authorexist.do" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">作家专区</font></h3></a></div>
+                <div class="col-md-6 col-xs-6">
+
+                    <div class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <input type="text" name="text" id="text" @keyup="autocomplete" v-model="inputtext"
+                                   class="form-control" placeholder="找人、找书" size="50"
+                                   style="height: 50px;border-radius:40px;"/>
+                            <button @click="S" class="btn btn-success"
+                                    style="outline:none;height: 50px; border-radius:50%;border: none;">搜索
+                            </button>
+                        </div>
+                        <div id="tips" v-show="inputtip!=''&&inputtext!=''" v-html="inputtip"
+                             style="border-radius:40px; background-color: white; position: absolute; z-index: 800; display: none; width: 420px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 col-xs-1 "><a href="LoginAndRegister.html" style=" text-decoration:none;"><img
+                        :src="headimg" :title="headtitle" class="img-circle" width="63px" height="63px"/></a></div>
+                <div class="col-md-1 col-xs-1 " v-if="readername!=''"><a
+                        :href="'Mydetail.html?readername='+(readername)"
+                        style=" text-decoration:none;"><h5><font
+                        color="white" face="华文行楷"><br>{{readername}}</font></h5></a></div>
+            </div>
+        </div>
+    </nav>
+    <br><br><br>
+
+    <div v-show="SS==0">
+        <div align="center">
+            <div id="myCarousel" class="carousel slide " data-ride="carousel" data-interval="4000">
+                <!-- 轮播（Carousel）指标 -->
+                <ol class="carousel-indicators">
+                    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                    <li data-target="#myCarousel" data-slide-to="1"></li>
+                    <li data-target="#myCarousel" data-slide-to="2"></li>
+                </ol>
+                <!-- 轮播（Carousel）项目 -->
+                <div class="carousel-inner">
+                    <div class="item active">
+                        <img src="images/second.png" width="1400px" height="350px">
+                    </div>
+                    <div class="item">
+                        <img src="images/first.png" width="1400px" height="350px">
+                    </div>
+                    <div class="item">
+                        <img src="images/third.png" width="1400px" height="350px">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br> <br>
+        <div align="center">
+            <div id="choosenav">
+                <table>
+                    <tr>
+                        <td v-for="(choose,index) in chooses"><h4>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <b><a :href="'#data-'+(index-1)">{{choose.name}}</a></b>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </h4></td>
+
+                    </tr>
+
+                </table>
+            </div><!--首页面导航定位-->
+            <br>
+            <div id="data-0" class="img_fd">
+                <table>
+                    <tr>
+                        <td v-for="(zztj,zztjNum) in zztjs" v-if="zztjNum<6">
+                            <a :href="zztj.bookurl" style=" text-decoration:none;">
+                                &nbsp;&nbsp;
+                                <img type="image" :src="zztj.bookimg" width="180px" height="230" :title="zztj.bookname">
+                                &nbsp;&nbsp;
+                                <h5>&nbsp;&nbsp;&nbsp;&nbsp;{{zztj.authorname}}/{{zztj.booktype}}</h5>
+                                &nbsp;&nbsp;
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div><!--站长推荐-->
+            <hr>
+            <h2><font color="#ff4500"><b>大神推荐</b></font></h2><br>
+            <div id="data-1">
+                <table>
+                    <tr>
+                        <td v-for="(dstj,dstjNum) in dstjs" v-if="dstjNum<6">
+                            <a :href="dstj.bookurl" style=" text-decoration:none;">
+                                &nbsp;&nbsp;&nbsp;
+                                <img type="image" :src="dstj.bookimg" width="180px" height="230" :title="dstj.bookname">
+                                &nbsp;&nbsp;&nbsp;
+                                <table>
+                                    <tr>
+                                        <td><h5>&nbsp;&nbsp;&nbsp;{{dstj.authorname}}/{{dstj.booktype}}</h5></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="180px" height="100px">&nbsp;&nbsp;&nbsp;{{dstj.bookintro}}</td>
+                                    </tr>
+                                </table>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <hr>
+
+            <h2><font color="#ff4500"><b>新书推荐</b></font></h2><br>
+            <div id="data-2">
+                <table>
+                    <tr>
+                        <td v-for="(xstj,xstjNum) in xstjs" v-if="xstjNum<6">
+                            <a :href="xstj.bookurl" style=" text-decoration:none;">
+                                &nbsp;&nbsp;
+                                <img type="image" :src="xstj.bookimg" width="180px" height="230" :title="xstj.bookname">
+                                &nbsp;&nbsp;
+                                <h5>&nbsp;&nbsp;&nbsp;&nbsp;{{xstj.authorname}}/{{xstj.booktype}}</h5>
+                                &nbsp;&nbsp;
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <hr>
+            <h2><font color="#ff4500"><b>精品推荐</b></font></h2><br>
+            <div id="data-3">
+                <table>
+                    <tr>
+                        <td v-for="(jptj,jptjNum) in jptjs" v-if="jptjNum<6">
+                            <a :href="jptj.bookurl" style=" text-decoration:none;">
+                                &nbsp;&nbsp;&nbsp;
+                                <img type="image" :src="jptj.bookimg" width="180px" height="230" :title="jptj.bookname">
+                                &nbsp;&nbsp;&nbsp;
+                                <h5>&nbsp;&nbsp;&nbsp;&nbsp;{{jptj.authorname}}/{{jptj.booktype}}</h5>
+                                &nbsp;&nbsp;
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div><!--精品推荐-->
+            <hr>
+
+        </div>
+    </div>
+    <div class="container" v-show="SS==1">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div><br><br><br><br><br><br><br><br>
+                    <button @click="YC" class="btn-success"
+                            style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">隐藏结果
+                    </button>
+                    <h2>搜索结果：</h2>
+                    <h3 v-if="books.length<1">没有搜索结果！</h3>
+                    <div v-for="(book,num) in books">
+                        <a :href="book.bookurl" style=" text-decoration:none;" class="col-md-3">
+                            <img type="image" :src="book.bookimg" width="180px" height="230" :title="book.bookname">
+                            <p>&nbsp;&nbsp;&nbsp;&nbsp;{{book.authorname}}/{{book.booktype}}</p>
+                        </a>
+                    <!--    <br v-if="num/3!=0">-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+            books: [],
+            SS: 0,
+            headimg: 'images/humanhead.png',//默认头像
+            readername: '',//昵称
+            headtitle: '登录/注册',
+            inputtext: '',//搜索框内容
+            inputtip: '',//提示内容
+            inputtipshow: '',
+            chooses: [{name: '站长推荐'}, {name: '大神推荐'}, {name: '新书推荐'}, {name: '精品推荐'}],
+            zztjs: [], dstjs: [], xstjs: [], jptjs: [], cbzps: []
+        },
+        mounted: function () {
+            axios.post('navsession.do', {}).then(function (response) {//导航栏用户信息
+                if (response.data.length != 0) {
+                    vindex.readername = response.data.readername;
+                    vindex.headimg = response.data.headimg;
+                    vindex.headtitle = "已登录"
+                }
+            })
+                .catch(function (error) {
+                    console.log(error);
+                });
+
+            axios.post('zztjs.do', {}) //站长推荐
+                .then(function (response) {
+                    var temp = response.data
+                    for (var i = 0; i < 6; i++) {
+                        vindex.zztjs.push({
+                            bookimg: temp[i].bookimg,
+                            authorname: temp[i].authorname,
+                            booktype: temp[i].booktype,
+                            bookname: temp[i].bookname,
+                            bookurl: 'bookdetail.html?bookno=' + temp[i].bookno
+                        });
+                    }
+                }).catch(function (error) {
+                console.log(error);
+            });
+            axios.post('dstjs.do', {}) //大神推荐
+                .then(function (response) {
+                    var temp = response.data
+                    for (var i = 0; i < 5; i++) {
+                        vindex.dstjs.push({
+                            bookimg: temp[i].bookimg,
+                            authorname: temp[i].authorname,
+                            booktype: temp[i].booktype,
+                            bookname: temp[i].bookname,
+                            bookintro: temp[i].bookintro.substring(0, 45) + "....",
+                            bookurl: 'bookdetail.html?bookno=' + temp[i].bookno
+                        });
+                    }
+                }).catch(function (error) {
+                console.log(error);
+            });
+            axios.post('xstjs.do', {}) //新书推荐
+                .then(function (response) {
+                    var temp = response.data
+                    for (var i = 0; i < 6; i++) {
+                        vindex.xstjs.push({
+                            bookimg: temp[i].bookimg,
+                            authorname: temp[i].authorname,
+                            booktype: temp[i].booktype,
+                            bookname: temp[i].bookname,
+                            bookurl: 'bookdetail.html?bookno=' + temp[i].bookno
+                        });
+                    }
+                }).catch(function (error) {
+                console.log(error);
+            });
+            axios.post('jptjs.do', {}) //精品推荐
+                .then(function (response) {
+                    var temp = response.data
+                    for (var i = 0; i < 5; i++) {
+                        vindex.jptjs.push({
+                            bookimg: temp[i].bookimg,
+                            authorname: temp[i].authorname,
+                            booktype: temp[i].booktype,
+                            bookname: temp[i].bookname,
+                            bookurl: 'bookdetail.html?bookno=' + temp[i].bookno
+                        });
+                    }
+                }).catch(function (error) {
+                console.log(error);
+            });
+        },
+        methods: {
+            YC: function () {
+                vindex.SS = 0;
+            },
+            S: function () {
+                vindex.SS = 1;
+                axios.post('SS.do', {
+                    inputtext: vindex.inputtext
+                }).then(function (response) {
+                    vindex.books = [];
+                    var flag=0;
+                    var temp = response.data;
+                    console.log(temp);
+                    for (var i = 0; i < temp.length; i++) {
+                        for (var j = 0; j < vindex.books.length; j++) {
+                            if (vindex.books[j].bookname == temp[i].bookname) {
+                                flag = 1;break;
+                            }
+                        }
+                        if (flag == 0) {
+                            vindex.books.push({
+                                bookimg: temp[i].bookimg,
+                                authorname: temp[i].authorname,
+                                bookname: temp[i].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[i].bookno,
+                                booktype: temp[i].booktype,
+                            });
+                        }
+                        flag=0;
+                    }
+                    console.log(vindex.books);
+                })
+            },
+            autocomplete: function () {
+                axios.post('AutoComplete.do', {
+                    inputtext: vindex.inputtext
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                        vindex.inputtip = ""
+                        if (str != null && str != "") {//响应成功
+
+                            var result = str.split(",");
+                            var childs = "";
+                            //遍历结果集，将结果集中的每一条数据用一个div显示，把所有的div放入到childs中
+                            for (var i = 0; i < result.length; i++) {
+                                childs += "<br><div style='border-radius:60px;'onclick='Write(this)' onmouseout='recoverColorwhenMouseout(this)' onmouseover='changeColorwhenMouseover(this)'>" + result[i] + "</div>";
+                            }
+                            //把childs 这div集合放入到下拉提示框的父div中，上面我们以获取了
+                            vindex.inputtip = childs + "<br>";
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+
+        }
+
+    });
+
+    function changeColorwhenMouseover(tag) {
+        tag.style.color = "red";
+    }//鼠标移入事件
+    function recoverColorwhenMouseout(tag) {
+        tag.style.color = "black";
+    }//鼠标移出事件
+    function Write(tag) {
+        vindex.inputtip = null
+        vindex.inputtext = tag.innerHTML;
+    }//补全输入框
+</script>
+
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/bootstrap.js"></script>
+
+</body>
+
+</html>

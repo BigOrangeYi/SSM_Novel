@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.AdminDao.AdminAuthorsDao">
+    <select id="ASelectAuthors"  resultType="authorVo">
+        select * from aauthors limit #{PageNum},#{PageSize}
+    </select>
+    <select id="ASelectOneAuthors"  resultType="authorVo">
+        select * from aauthors
+        <where>
+            <choose>
+                <when test="phone!=null and phone!='' and authorname!=null and authorname!=''">and phone like "%"#{phone}"%" or authorname like "%"#{authorname}"%"</when>
+                <otherwise>and 1!=1</otherwise>
+            </choose>
+        </where>
+    </select>
+    <delete id="ADeleteAuthors" parameterType="authorVo">
+        delete from aauthors where authorno=#{authorno}
+    </delete>
+    <update id="AUpdateAuthors" parameterType="authorVo">
+        update aauthors set phone=#{phone},authorname=#{authorname} where authorno=#{authorno}
+    </update>
+</mapper>

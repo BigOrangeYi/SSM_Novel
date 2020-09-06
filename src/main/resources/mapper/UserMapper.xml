@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.dao.UserDao">
+    <insert id="Register" useGeneratedKeys="true" keyProperty="id" parameterType="userVo">/*注册*/
+        insert into Ausers(phone,password,readername,headimg) value(#{phone},#{password},#{readername},#{headimg});
+    </insert>
+    <select id="FindUserByPhone"  resultType="userVo">/*用户存在性检查*/
+        select * from Ausers where phone=#{phone}
+    </select>
+    <select id="Login"  resultType="java.lang.Integer">/*登录*/
+        select count(id) from Ausers where phone=#{phone} and password=#{password}
+    </select>
+    <select id="navsession"  resultType="userVo">/*查询导航栏session信息（头像，昵称）*/
+        select * from Ausers where phone=#{userphone}
+    </select>
+    <select id="AutoComplete1"  resultType="java.lang.String">/*自动补全功能（模糊查找）*/
+        select authorname from aauthors
+        <where>
+            <choose >
+                <when test="inputtext!=null and inputtext!=''">
+                    and authorname like "%"#{inputtext}"%"
+                </when>
+                <otherwise>
+                    and 1!=1
+                </otherwise>
+            </choose>
+
+        </where>
+    </select>
+    <select id="AutoComplete2"  resultType="java.lang.String">/*自动补全功能（模糊查找）*/
+        select bookname from abooks 
+        <where>
+            <choose >
+            <when test="inputtext!=null and inputtext!=''">
+                and bookname like "%"#{inputtext}"%"
+            </when>
+            <otherwise>
+                and 1!=1
+            </otherwise>
+            </choose>
+        </where>
+
+    </select>
+    <update id="AlterHeadimg" parameterType="userVo">/*改头像*/
+        update ausers set headimg=#{headimg} where phone=#{phone}
+    </update>
+    <update id="AlterPassword" parameterType="userVo">/*改密码或者昵称*/
+        update ausers
+        <trim prefix="set" suffixOverrides=",">
+            <if test="readername!=null and readername!=''">readername=#{readername},</if>
+
+            <if test="password!=null and password!=''">password=#{password},</if>
+        </trim>
+        where phone=#{phone}
+    </update>
+    <delete id="DeleteUser" parameterType="userVo">
+        delete from ausers where phone=#{phone}
+    </delete><!--注销用户-->
+    <select id="FindPassword" resultType="userVo">
+        select * from ausers where phone=#{phone} and password like "%"#{password}"%"
+    </select><!--找回密码-->
+</mapper>

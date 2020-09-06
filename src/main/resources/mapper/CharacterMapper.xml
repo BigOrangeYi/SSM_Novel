@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.dao.CharacterDao">
+    <select id="QueryAllCharacter" resultType="characterVo" statementType="STATEMENT">/*查询目录*/
+        select * from `${bookno}`
+        <where>
+            <choose>
+                <when test="bookno!=null and bookno!='' and characterno!=null and characterno!=''">
+                    and characterno=${characterno} and bookno=${bookno}
+                </when>
+                <when test="bookno!=null and bookno!=''">
+                    and bookno=${bookno}
+                </when>
+                <otherwise>
+                    and 1!=1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <select id="FYQueryChapter" resultType="characterVo" parameterType="java.util.Map" statementType="STATEMENT">
+        select * from `${bookno}`
+        <where>
+            <choose>
+                <when test="flag==0"> 
+                    and bookno=${bookno} and characterno &lt; ${characterno} order by characterno desc
+                </when>
+                <when test="flag==1">
+                    and bookno=${bookno} and characterno &gt; ${characterno} order by characterno
+                </when>
+                <otherwise>
+                   and  bookno=${bookno} and characterno=${characterno}
+                </otherwise>
+            </choose>
+        </where>
+         limit 1
+    </select>
+    <update id="UpdateCharacter" statementType="STATEMENT">/*更新章节*/
+        update `${bookno}`
+        <trim prefix="set" suffixOverrides=",">
+            <if test="charactername!=null and charactername!=''">charactername="${charactername}",</if>
+            <if test="characterdetail!=null and characterdetail!=''">characterdetail="${characterdetail}",</if>
+
+        </trim>
+        where characterno=${characterno}
+    </update>
+    <insert id="ADDCharacter" useGeneratedKeys="true" keyProperty="id" parameterType="characterVo">/*插入章节*/
+            insert into `${bookno}`(characterno,charactername,characterdetail,bookno) values ("${characterno}","${charactername}","${characterdetail}","${bookno}");
+    </insert>
+    <delete id="DeleteCharacter" statementType="STATEMENT">/*删除章节*/
+        delete from `${bookno}` where characterno="${characterno}"
+    </delete>
+    <select id="CHeckChapterno" resultType="java.lang.Integer" statementType="STATEMENT">
+        select count(id) from `${bookno}` where characterno=${characterno}
+    </select>
+</mapper>

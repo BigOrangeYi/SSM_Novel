@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.dao.BookDao">
+    <select id="FindBookByParam"  resultType="bookVo">/*根据参数查询书籍*/
+        select * from abooks
+        <where>
+            <choose>
+                <when test="bookposition!=null and bookposition!=''">
+                    and bookposition like "%"#{bookposition}"%"
+                </when>
+                <when test="bookno!=null and bookno!=''">
+                    and bookno=#{bookno}
+                </when>
+                <otherwise>
+                    and 1!=1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <insert id="addbook" useGeneratedKeys="true" keyProperty="shelfno" parameterType="bookShelfVo">/*加入书架*/
+        insert into abookshelf(bookno,bookname,authorname,phone,bookimg) value(#{bookno},#{bookname},#{authorname},#{phone},#{bookimg});
+    </insert>
+    <select id="Mybookshelf"  resultType="bookShelfVo">/*根据参数查询书架*/
+        select * from abookshelf where phone=#{phone}
+    </select>
+    <select id="QueryMyBookShelf"  resultType="java.lang.Integer">/*查询我的书架书是否存在*/
+        select count(shelfno) from abookshelf where phone=#{phone} and bookno=#{bookno}
+    </select>
+    <delete id="DeleteBookShelf" parameterType="bookShelfVo">
+        delete from abookshelf where shelfno=#{shelfno}
+    </delete>
+    <select id="QueryMybook" resultType="bookVo">/*查询我的书籍*/
+        select * from abooks where authorno=#{authorno}
+    </select>
+    <!--增加书籍-->
+    <insert id="ADDBook" useGeneratedKeys="true" keyProperty="bookno" parameterType="BookVo">
+            insert into abooks(authorno,authorname,bookname,booktype,bookimg,bookintro,bookpopularity,bookpublish,bookbirthday,bookposition)
+            values (#{authorno},#{authorname},#{bookname},#{booktype},#{bookimg},#{bookintro},#{bookpopularity},#{bookpublish},#{bookbirthday},#{bookposition});
+    </insert>
+    <!--存储过程建立章节表-->
+    <select id="ADDChapterTable" statementType="CALLABLE" >
+        <!--调用存储过程有专门的标签statementType="CALLABLE" 用{}括起来-->
+        {
+        call Create_ChapterTable( '`${ChapterName}`' )
+        }
+    </select>
+    <delete id="DeleteBook">/*删除书籍*/
+        delete from abooks where bookno=#{bookno}
+    </delete>
+    <update id="UpdateBook">/*更新书籍信息(封面和介绍)*/
+        update abooks
+        <trim prefix="set" suffixOverrides=",">
+            <if test="bookimg!=null and bookimg!=''">bookimg=#{bookimg},</if>
+            <if test="bookintro!=null and bookintro!=''">bookintro=#{bookintro},</if>
+        </trim>
+        where bookno=#{bookno}
+    </update>
+    <select id="QueryBookName" resultType="BookVo">/*查询书名*/
+        select * from abooks
+        <where>
+            <choose>
+                <when test="bookname!=null and bookname!=''"> and bookname like "%"#{bookname}"%"</when>
+                 <when test="authorname!=null and authorname!=''">and authorname like "%"#{authorname}"%"</when>
+                 <otherwise>
+                     and 1!=1
+                 </otherwise>
+            </choose>
+        </where>
+
+    </select>
+    <select id="AllBooks" resultType="BookVo">
+        select * from abooks
+        <where>
+            <choose>
+                <when test="Type!=null and Type!=''">
+                    and booktype=#{Type}
+                </when>
+                <otherwise>
+                    and 1=1
+                </otherwise>
+            </choose>
+        </where>
+        limit #{PageNum},#{PageSize}
+    </select>
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.dao.AuthorDao">
+    <select id="QueryAuthorByPhone"  resultType="authorVo">/*//根据参数查询作者*/
+        select * from aauthors where phone=#{phone}
+    </select>
+    <select id="QueryAuthorByName"  resultType="authorVo">/*//根据参数查询笔名*/
+        select * from aauthors where authorname=#{authorname}
+    </select>
+    <insert id="AddAuthor"  useGeneratedKeys="true" keyProperty="authorno" parameterType="authorVo">/*增加作者*/
+insert into aauthors(authorname,phone) values (#{authorname},#{phone});
+    </insert>
+    <delete id="UDeleteAuthor">/*删除作者*/
+        delete from aauthors where authorno=#{authorno}
+    </delete>
+    <update  id="DeleteWork"  >/*删除作品*/
+           DROP TABLE `${bookno}`
+    </update >
+    <update id="AlterBookImg" parameterType="bookVo">/*改封面*/
+        update abooks set bookimg=#{bookimg} where bookno=#{bookno}
+    </update>
+</mapper>

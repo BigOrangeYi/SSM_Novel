@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理评论</title>
+    <style type="text/css">
+        table
+        {
+            border-collapse: collapse;
+            margin: 0 auto;
+            text-align: center;
+        }
+        table td, table th
+        {
+            border: 1px solid #cad9ea;
+            color: #666;
+            height: 30px;
+            width: 300px;
+        }
+        table thead th
+        {
+            background-color: #CCE8EB;
+            width: 100px;
+        }
+        table tr:nth-child(odd)
+        {
+            background: #fff;
+        }
+        table tr:nth-child(even)
+        {
+            background: #F5FAFA;
+        }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<div id="Index">
+    <br><br><br>
+    <div align="center"><a href="AdminIndex.html">返回管理首页</a><h3>评论管理</h3></div>
+    <input type="text" v-model="SearchText"><input type="button" value="搜索" @click="Search">
+    <table v-if="SearchResult!=null&&SearchResult!=''">
+        <tr><td colspan="10" @click="SearchResult=''">收起结果</td></tr>
+        <tr ><td>commentid</td>
+            <td>replyid</td>
+            <td>readername</td>
+            <td>replyname</td>
+            <td>commentdate</td>
+            <td>commenttext</td>
+            <td>bookno</td>
+            <td>headimg</td>
+            <td colspan="2">操作</td></tr>
+        <tr v-for="(Result,ResultNum) in SearchResult">
+            <td>{{Result.commentid}}</td>
+            <td contenteditable="true" @blur="Result.replyid=$event.target.innerText">{{Result.replyid}}</td>
+            <td contenteditable="true" @blur="Result.readername=$event.target.innerText">{{Result.readername}}</td>
+            <td contenteditable="true" @blur="Result.replyname=$event.target.innerText">{{Result.replyname}}</td>
+            <td contenteditable="true" @blur="Result.commentdate=$event.target.innerText">{{Result.commentdate}}</td>
+            <td ><textarea style="height: 115px;" v-model="Result.commenttext">{{Result.commenttext}}</textarea></td>
+            <td contenteditable="true" @blur="Result.bookno=$event.target.innerText">{{Result.bookno}}</td>
+            <td contenteditable="true" @blur="Result.headimg=$event.target.innerText">{{Result.headimg}}</td>
+            <td @click="ADeleteReplys(Result.commentid)">确定删除</td>
+            <td @click="AUpdateReplys(Result.commentid,Result.replyid,Result.readername,Result.replyname,Result.commentdate,Result.commenttext,Result.bookno,Result.headimg)">保存修改</td>
+        </tr>
+    </table>
+    <br>   <br>   <br>   <br>
+    <table>
+        <tr ><td>commentid</td>
+            <td>replyid</td>
+            <td>readername</td>
+            <td>replyname</td>
+            <td>commentdate</td>
+            <td>commenttext</td>
+            <td>bookno</td>
+            <td>headimg</td><td colspan="2">操作</td></tr>
+        <tr v-for="(Reply,ReplyNum) in Replys">
+            <td>{{Reply.commentid}}</td>
+            <td contenteditable="true" @blur="Reply.replyid=$event.target.innerText">{{Reply.replyid}}</td>
+            <td contenteditable="true" @blur="Reply.readername=$event.target.innerText">{{Reply.readername}}</td>
+            <td contenteditable="true" @blur="Reply.replyname=$event.target.innerText">{{Reply.replyname}}</td>
+            <td contenteditable="true" @blur="Reply.commentdate=$event.target.innerText">{{Reply.commentdate}}</td>
+            <td ><textarea style="height: 115px;" v-model="Reply.commenttext">{{Reply.commenttext}}</textarea></td>
+            <td contenteditable="true" @blur="Reply.bookno=$event.target.innerText">{{Reply.bookno}}</td>
+            <td contenteditable="true" @blur="Reply.headimg=$event.target.innerText">{{Reply.headimg}}</td>
+            <td @click="ADeleteReplys(Reply.commentid)">确定删除</td>
+            <td @click="AUpdateReplys(Reply.commentid,Reply.replyid,Reply.readername,Reply.replyname,Reply.commentdate,Reply.commenttext,Reply.bookno,Reply.headimg)">保存修改</td>
+        </tr>
+    </table>
+    <br>
+    <div align="center">
+        <a @click="Pre">上一页</a>
+        第<input v-model="VPageNum" type="number" size="3">页<input type="button" value="跳转" @click="todo(VPageNum)" >
+        <a @click="Next">下一页</a>
+    </div>
+</div>
+<script>
+    var PageNum=1;
+    var PageSize=6;
+    $(function () {
+        vindex.ASelectReplys(PageNum,PageSize);
+    });
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+            SearchText:'',
+            SearchResult:[],
+            VPageNum:'',
+            Replys:[]
+        },
+        mounted: function (){},
+        methods:{
+            Search:function(){
+                if (vindex.SearchText != null && vindex.SearchText != '') {
+                    vindex.SearchResult=[];
+                    axios.post('ASelectOneReplys.do', {
+                        readername:vindex.SearchText
+                    }).then(function (response) {
+                        var temp = response.data;
+                        console.log(temp);
+                        for (var i = 0; i < temp.length; i++)
+                            vindex.SearchResult.push({
+                                commentid:temp[i].commentid,
+                                replyid:temp[i].replyid,
+                                readername:temp[i].readername,
+                                replyname:temp[i].replyname,
+                                commentdate:temp[i].commentdate,
+                                commenttext:temp[i].commenttext,
+                                bookno:temp[i].bookno,
+                                headimg:temp[i].headimg
+                            })
+                    })
+                }
+            },
+            Pre:function(){
+                if (PageNum > 1)
+                {
+                    vindex.VPageNum=--PageNum;
+                    vindex.ASelectReplys(PageNum,PageSize);
+                }
+            },
+            Next:function(){
+                if (vindex.Replys.length == 6)
+                {
+                    vindex.VPageNum=++PageNum;
+                    vindex.ASelectReplys(PageNum,PageSize);
+                }
+            },
+            todo:function(Num){
+                if (Num > 0)
+                {
+                    PageNum=Num;
+                    vindex.ASelectReplys(PageNum,PageSize);
+                }
+            },
+            AUpdateReplys:function(commentid,replyid,readername,replyname,commentdate,commenttext,bookno,headimg){
+                axios.post('AUpdateReplys.do', {
+                    commentid:commentid,
+                    replyid:replyid,
+                    readername:readername,
+                    replyname:replyname,
+                    commentdate:commentdate,
+                    commenttext:commenttext,
+                    bookno:bookno,
+                    headimg:headimg
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("修改成功");
+                        vindex.ASelectReplys(PageNum,PageSize);
+                    }
+                    else alert("修改失败")
+                });
+
+            },
+            ADeleteReplys:function(commentid){
+                axios.post('ADeleteReplys.do', {commentid:commentid}).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("删除成功");
+                        vindex.ASelectReplys(PageNum,PageSize);
+                    }
+                    else alert("删除失败")
+                });
+            },
+            ASelectReplys:function (PageNum,PageSize) {
+                vindex.Replys=[];
+                axios.post('ASelectReplys.do', {
+                    PageNum:PageNum,
+                    PageSize:PageSize
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    for (var i = 0; i < temp.length; i++)
+                        vindex.Replys.push({
+                            commentid:temp[i].commentid,
+                            replyid:temp[i].replyid,
+                            readername:temp[i].readername,
+                            replyname:temp[i].replyname,
+                            commentdate:temp[i].commentdate,
+                            commenttext:temp[i].commenttext,
+                            bookno:temp[i].bookno,
+                            headimg:temp[i].headimg
+                        });
+                })
+            }
+        }
+    });
+</script>
+</body>
+</html>

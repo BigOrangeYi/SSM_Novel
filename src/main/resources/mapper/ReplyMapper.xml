@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.dao.ReplyDao">
+    <select id="QueryComments1"  resultType="replyVo">/*查询一级评论*/
+        select * from acomments where bookno=#{bookno} and replyid is null order by commentid DESC ;
+    </select>
+    <select id="QueryComments2"  resultType="replyVo">/*查询二级评论*/
+        select * from acomments where replyid=#{commentid} order by commentid;
+    </select>
+    <insert id="AddComment"  useGeneratedKeys="true" keyProperty="commentid" parameterType="replyVo">
+insert into acomments(bookno,commenttext,commentdate,readername,headimg) values (#{bookno},#{commenttext},#{commentdate},#{readername},#{headimg})
+    </insert>
+    <insert id="Replycmt"  useGeneratedKeys="true" keyProperty="commentid" parameterType="replyVo">
+insert into acomments(bookno,commenttext,commentdate,readername,headimg,replyid,replyname) values (#{bookno},#{commenttext},#{commentdate},#{readername},#{headimg},#{replyid},#{replyname})
+    </insert>
+    <delete id="DeleteReply">
+        delete from acomments where commentid=#{commentid}
+    </delete>
+</mapper>

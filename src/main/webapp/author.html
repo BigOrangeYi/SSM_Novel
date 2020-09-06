@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>作家专区</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+
+    <style>
+        ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        li {
+            list-style-type: none;
+            display: inline
+        }
+
+        body {
+            background: url(images/loginbg.jpg);
+        }
+
+    </style>
+
+
+</head>
+<body>
+
+<div id="Index">
+    <nav class="nav nav-tabs navbar-fixed-top navbar-inverse navbar" role="navigation"><!--导航栏-->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-1  col-xs-1"><a href="index.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">首页</font></h3></a></div>
+                <div class="col-md-1 col-xs-1"><a href="books.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">书库</font></h3></a></div>
+                <div class="col-md-2  col-xs-2"><a href="authorexist.do" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">作家专区</font></h3></a></div>
+                <div class="col-md-6 col-xs-6">
+
+                    <div class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <input type="text" name="text" id="text" @keyup="autocomplete" v-model="inputtext"
+                                   class="form-control" placeholder="找人、找书" size="50"
+                                   style="height: 50px;border-radius:40px;"/>
+                            <button @click="S" class="btn btn-success"
+                                    style="outline:none;height: 50px; border-radius:50%;border: none;">搜索
+                            </button>
+                        </div>
+                        <div id="tips" v-show="inputtip!=''&&inputtext!=''" v-html="inputtip"
+                             style="border-radius:40px; background-color: white; position: absolute; z-index: 800; display: none; width: 420px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 col-xs-1 "><a href="LoginAndRegister.html" style=" text-decoration:none;"><img
+                        :src="headimg" :title="headtitle" class="img-circle" width="63px" height="63px"/></a></div>
+                <div class="col-md-1 col-xs-1 " v-if="readername!=''"><a
+                        :href="'Mydetail.html?readername='+(readername)" style=" text-decoration:none;"><h5><font
+                        color="white" face="华文行楷"><br>{{readername}}</font></h5></a></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid" v-show="SS==0"><br> <br> <br> <br> <br> <br> <br>
+        <div class="row">
+            <!--作品管理导航-->
+            <div class="col-md-2">
+                <ul>
+                    <li><font face="华文行楷" size="6"><h4>作者编号：{{authorno}}</h4></font>
+                    <li><font face="华文行楷" size="6"><h4>作者笔名：{{authorname}}</h4></font><br>
+                    <li><font face="华文行楷" size="6"><a @click="altertable1(d1)">创作新书</a></font><br> <br><br> <br></li>
+                    <li><font face="华文行楷" size="6"><a @click="altertable1(d2)">章节管理</a></font><br> <br><br> <br></li>
+                    <li><font face="华文行楷" size="6"><a @click="altertable1(d3)">封面上传</a></font><br> <br><br> <br></li>
+                    <li><font face="华文行楷" size="6"><a @click="altertable1(d4)">删除作品</a></font><br> <br><br> <br></li>
+                    <li><font face="华文行楷" size="6"><a @click="DeleteAuthor">注销作者</a></font><br> <br><br> <br></li>
+                </ul>
+            </div>
+            <!--操作页--><!--创建新书-->
+            <div class="col-md-6" :id="d1" v-show="d1==num">
+                <div class="col-md-offset-3">
+                    <label><input v-model="booktype" name="booktype" type="radio" value="现代"/>现代 </label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="社科"/>社科 </label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="社科"/>科幻 </label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="社科"/>穿越 </label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="社科"/>玄幻 </label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="社科"/> 武侠</label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="社科"/>言情</label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="社科"/>古典 </label>
+                    <label><input v-model="booktype" name="booktype" type="radio" value="奇幻"/>奇幻 </label><br><br>
+                    <input @blur="checkbookname" v-model="bookname" type="text" class="form-control"
+                           style="width:700px;border-radius:40px;" placeholder="书名"><br>
+                    <div style="color:red;display: inline-block" v-show="booknametip!=''">{{booknametip}}</div>
+                    <textarea @change="checkbookintro" v-model="bookintro"
+                              style="border-radius:15px;width: 700px;height: 400px;"
+                              placeholder="简介"></textarea>
+                    <div style="color:red;display: inline-block" v-show="bookintrotip!=''">{{bookintrotip}}</div>
+                    <input type="button" class="form-control" value="创建此书" @click="submit" size="50"
+                           style="height: 50px;width:700px;border-radius:40px;background-color:limegreen; ">
+                </div>
+                <div :id="d2" v-if="d2==num"><!--章节管理-->
+                </div>
+            </div>
+            <!--操作页--><!--章节管理-->
+            <div class="col-md-10" :id="d2" v-show="d2==num">
+                <div>
+                    <!--书籍选择-->
+                    <div class="col-md-offset-2">选择要管理的书籍：
+                        <select v-model="Cbookno" @change='QChapters'>
+                            <option value='' disabled selected style='display:none;'>请选择</option>
+                            <option v-for="(mybook,index) in mybooks" :key="index" :value="mybook.bookno">
+                                书籍编号：{{mybook.bookno}}/&nbsp;书籍名称：{{mybook.bookname}}
+                            </option>
+                        </select>
+                        <br>
+
+                    </div>
+                    <br>
+                    <!--目录-->
+                    <div :id="C1" v-show="C1==num2">
+                        <div class="col-md-offset-4"><button v-if="Cbookno!=''&&Cbookno!=null" @click="altertable2(3)" class="btn-success"style="outline:none;width: 100px;height: 32px;border-radius: 50px;border: 1px solid;" >新增章节</button></div>
+                        <br><br>
+                        <ul>
+                            <li v-for="(chapter,Number) in chapters" class="col-md-4 ">
+                                <a @click="Cdetail(chapter.Cchapterno)">序号：{{chapter.Cchapterno}}》&nbsp;{{chapter.Cchaptername}}</a>
+                                <button @click="DeleteChapter(chapter.Cchapterno)" class="btn-success"style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">删除</button>
+                                <br>
+                                <hr>
+                            </li>
+                            <br v-if="Number%2!=0">
+                        </ul>
+                    </div>
+                    <!--修改--><!--章节详情-->
+                    <div :id="C2" v-show="C2==num2" >
+                        <div class="col-md-10"><a @click="altertable2(1)"><h3><b>返回目录</b></h3></a></div>
+                        <div class="col-md-10"><h3><b>序号：{{Cchapterno}}》</b></h3></div>
+                        <div class="col-md-10"contenteditable="true" style="background-color: white;outline: none;" @blur="Cchaptername=$event.target.innerText"><h3><b>{{Cchaptername}}</b></h3></div>
+                        <div contenteditable="true" class="col-md-10" style="background-color: white;height: auto;outline: none;" @blur="chaptertext=$event.target.innerHTML" v-html="chaptertext"></div>
+                        <div class="col-md-10"><button @click="SaveUpdate" class="btn-success"style="outline:none;width: 150px;height: 50px;border-radius: 50px;border: 1px solid;" >保存修改</button></div>
+                    </div>
+                    <!--新增章节-->
+                    <div :id="C3" v-show="C3==num2"class="col-md-offset-1">
+                        <div class="col-md-10"><a @click="altertable2(1)"><h3><b>返回目录</b></h3></a></div>
+                        <br>
+                        <!--章节号-->
+                        <div >
+                            <input @blur="CheckNewCno" v-model="newChapterno" type="text" class="form-control"
+                                   style="width:700px;border-radius:40px;" placeholder="章节序号:数字">
+                            <div style="color:red;display: inline-block" v-show="cnotip!=''">{{cnotip}}</div>
+                            <br>
+                        </div>
+                        <!--章节名-->
+                        <div >
+                            <input  v-model="newChaptername" type="text" class="form-control"
+                                   style="width:700px;border-radius:40px;" placeholder="章节全名"><br>
+                        </div>
+                        <!--章节内容-->
+                        <div >
+                            <div contenteditable="true"  style="background-color: white;height:1000px;width:700px;outline: none;" @blur="newChaptertext=$event.target.innerHTML" v-html="newChaptertext"></div>
+                                <br>
+                        </div>
+                        <div class="col-md-10"><button @click="Save" class="btn-success"style="outline:none;width: 150px;height: 50px;border-radius: 50px;border: 1px solid;" >保存</button></div>
+                    </div>
+
+                </div>
+            </div>
+            <!--操作页--><!--封面上传-->
+            <div class="col-md-10" :id="d3" v-show="d3==num">
+                    <br> <br> <br> <br> <br> <br> <br>
+
+                    <div class="form-group">
+                        <form action="AlterBookImg.do" method="post"enctype="multipart/form-data">
+                            <div class="col-md-offset-2">选择要管理的书籍：
+                                <select v-model="Cbookno" @change='QChapters' name="bookno">
+                                    <option value='' disabled selected style='display:none;'>请选择</option>
+                                    <option v-for="(mybook,index) in mybooks" :key="index" :value="mybook.bookno">
+                                        书籍编号：{{mybook.bookno}}/&nbsp;书籍名称：{{mybook.bookname}}
+                                    </option>
+                                </select>
+                                <br>
+
+                            </div>
+                            <div class="input-group">
+                                <input  class="form-control"type="file" name="photo">
+                                <label class="input-group-btn"> <input type="submit"id="i-check" value="上传封面" class="btn btn-primary"></label>
+                            </div>
+                        </form>
+                    </div>
+
+
+            </div>
+            <!--操作页--><!--删除作品-->
+            <div class="col-md-10" :id="d3" v-show="d4==num">
+                <br> <br> <br> <br> <br> <br> <br>
+
+                <div class="form-group">
+
+                        <div class="col-md-offset-2">选择要管理的书籍：
+                            <select v-model="Cbookno" @change='QChapters' name="bookno">
+                                <option value='' disabled selected style='display:none;'>请选择</option>
+                                <option v-for="(mybook,index) in mybooks" :key="index" :value="mybook.bookno">
+                                    书籍编号：{{mybook.bookno}}/&nbsp;书籍名称：{{mybook.bookname}}
+                                </option>
+                            </select>
+                            <br>
+
+                        </div>
+                                <button @click="DeleteWork">删除该作品</button>
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+    <div class="container" v-show="SS==1">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div><br><br><br><br><br><br><br><br>
+                    <button @click="YC" class="btn-success"
+                            style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">
+                        隐藏结果
+                    </button>
+                    <h2>搜索结果：</h2>
+                    <h3 v-if="books.length<1">没有搜索结果！</h3>
+                    <div v-for="(book,num) in books">
+                        <a :href="book.bookurl" style=" text-decoration:none;" class="col-md-3">
+                            <img type="image" :src="book.bookimg" width="180px" height="230" :title="book.bookname">
+                            <p>&nbsp;&nbsp;&nbsp;&nbsp;{{book.authorname}}/{{book.booktype}}</p>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    $(function () {
+        authorexist();
+        SelectAuthor();
+
+    });
+
+    function SelectAuthor() {
+        axios.post('SelectAuthor.do', {}).then(function (response) {
+            var temp = response.data;
+            console.log(temp);
+            vindex.authorno = temp[0].authorno;
+            vindex.authorname = temp[0].authorname;
+            authorno = temp[0].authorno;
+            MyBooks();
+        });
+    }
+
+    function MyBooks() {
+        axios.post('MyBooks.do', {authorno: vindex.authorno}).then(function (response) {
+            var temp = response.data;
+            console.log(temp);
+            for (var i = 0; i < temp.length; i++) {
+                vindex.mybooks.push({
+                    bookimg: temp[i].bookimg,
+                    bookname: temp[i].bookname,
+                    booktype: temp[i].booktype,
+                    bookno: temp[i].bookno
+                });
+            }
+        })
+    }
+
+    function authorexist() {
+        axios.post('authorexist.do', {}).then(function (response) {
+            if (response.data == "未登录") {
+                alert("请登录");
+                window.location.href = "LoginAndRegister.html";
+            } else if (response.data == true) {
+                return true;
+            } else if (response.data == false) {
+                alert("请先去个人中心注册为作者");
+                window.location.href = "Mydetail.html";
+            }
+        })
+
+
+    }
+
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+            cnotip:"",
+            books: [],
+            SS: 0,
+            headimg: 'images/humanhead.png',//默认头像
+            readername: '',//昵称
+            headtitle: '登录/注册',
+            inputtext: '',//搜索框内容
+            inputtip: '',//提示内容
+            inputtipshow: '',
+            num: 1,
+            d1: 1, d2: 2, d3: 3, d4: 4,
+            C1: 1, C2: 2, C3: 3, C4: 4,
+            authorname: '',
+            authorno: '',
+            booktype: '',
+            bookname: '',
+            bookintro: '',
+            flag: [],
+            booknametip: '',
+            bookintrotip: '',
+            mybooks: [],//我的书籍
+            Cbookname: "",
+            Cbookno: "",
+            Cchaptername: "",
+            Cchapterno: "",
+            chapters: [],//选中书籍的目录
+            num2: 1,
+            chaptertext: "",
+            newChapterno:"",
+            newChaptername:"",
+            newChaptertext:"",
+        },
+        mounted: function () {
+            axios.post('navsession.do', {}).then(function (response) {//导航栏用户信息
+                if (response.data.length != 0) {
+                    vindex.readername = response.data.readername;
+                    vindex.headimg = response.data.headimg;
+                    vindex.headtitle = "已登录"
+                }
+            })
+                .catch(function (error) {
+                    console.log(error);
+                });
+
+
+        },
+        methods: {
+            DeleteWork:function(){
+                if (confirm("确定删除？")) {
+                    axios.post('DeleteWork.do', {
+                        bookno:vindex.Cbookno
+                    }).then(function (response) {
+                        var temp=response.data;
+                        if (temp==true){
+                            alert("删除成功");
+                            window.location.reload();
+                        }
+                        else {
+                            alert("删除失败")
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }
+            },
+            DeleteAuthor:function(){
+                if (confirm("确定注销？")) {
+                    axios.post('DeleteAuthor.do', {
+                        authorno:vindex.authorno
+                    }).then(function (response) {
+                        var temp=response.data;
+                        if (temp==true){
+                            alert("注销成功");
+                            window.location.href="index.html"
+                        }
+                        else {
+                            alert("注销失败")
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }
+
+            },
+            DeleteChapter:function(cno){
+                if(cno!=null&&cno!=""){
+                    if(vindex.Cbookno!=null&&vindex.Cbookno!=""){
+                        if(confirm("确认删除这个章节？")==true){
+                            axios.post('DeleteChapter.do', {
+                                bookno: vindex.Cbookno,
+                                characterno: cno,
+                            }).then(function (response) {
+                                var temp=response.data;
+                                if (temp==true){
+                                    alert("删除成功");
+                                }
+                                else {
+                                    alert("删除失败");
+                                }
+                            }).catch(function (error) {
+                                console.log(error);
+                            });
+                        }
+                    }
+                }
+            },
+            CheckNewCno:function(){
+                if(vindex.newChapterno!=null&&vindex.newChapterno!=""){
+                    if(vindex.Cbookno!=null&&vindex.Cbookno!=""){
+                                axios.post('CheckChapterno.do', {
+                                    bookno: vindex.Cbookno,
+                                    characterno: vindex.newChapterno,
+                                }).then(function (response) {
+                                    var temp=response.data;
+                                    if (temp==true){
+                                        vindex.cnotip="该章节号已存在"
+                                    }
+                                    else if (!(/^\+?[1-9][0-9]*$/.test(vindex.newChapterno))){
+                                        vindex.cnotip="章节号需要是数字且小于一万"
+                                    }
+                                    else if (vindex.newChapterno>=10000){
+                                        vindex.cnotip="章节号需要小于一万"
+                                    }
+                                    else {
+                                        vindex.cnotip=""
+                                    }
+                                }).catch(function (error) {
+                                    console.log(error);
+                                });
+
+
+                    }
+                }
+            },
+            Save:function(){
+                if(vindex.newChapterno!=null&&vindex.newChapterno!=""){
+                    if(vindex.Cbookno!=null&&vindex.Cbookno!=""){
+                        if(vindex.newChaptername!=null&&vindex.newChaptername!=""){
+                            if(vindex.newChaptertext!=null&&vindex.newChaptertext!=""){
+
+                                axios.post('NewChapter.do', {
+                                    bookno: vindex.Cbookno,
+                                    characterno: vindex.newChapterno,
+                                    charactername:vindex.newChaptername,
+                                    characterdetail:vindex.newChaptertext
+                                }).then(function (response) {
+                                    var temp=response.data;
+                                    if (temp==true){
+                                        alert("保存成功");
+                                    }
+                                    else {
+                                        alert("保存失败");
+                                    }
+                                }).catch(function (error) {
+                                    console.log(error);
+                                });
+                            }
+                            else {
+                                alert("章节内容不能为空");
+                            }
+                        }else {
+                            alert("章节名不能为空");
+                        }
+                    }else {
+                        alert("书号不能为空");
+                    }
+                }else {alert("章节号不能为空");}
+            },
+            SaveUpdate:function(){
+              if(vindex.Cchapterno!=null&&vindex.Cchapterno!=""){
+                  if(vindex.Cbookno!=null&&vindex.Cbookno!=""){
+                      if(vindex.Cchaptername!=null&&vindex.Cchaptername!=""){
+                          if(vindex.chaptertext!=null&&vindex.chaptertext!=""){
+                              axios.post('UpdateChapter.do', {
+                                  bookno: vindex.Cbookno,
+                                  characterno: vindex.Cchapterno,
+                                  charactername:vindex.Cchaptername,
+                                  characterdetail:vindex.chaptertext
+                              }).then(function (response) {
+                                  var temp=response.data;
+                                  if (temp==true){
+                                      alert("保存成功");
+                                  }
+                                  else {
+                                      alert("保存失败");
+                                  }
+                              }).catch(function (error) {
+                                  console.log(error);
+                              });
+                          }
+                      }
+                  }
+              }
+            },
+            htmlDecode: function (text) {
+                //1.首先动态创建一个容器标签元素，如DIV
+                var temp = document.createElement("div");
+                //2.然后将要转换的字符串设置为这个元素的innerHTML(ie，火狐，google都支持)
+                temp.innerHTML = text;
+                //3.最后返回这个元素的innerText或者textContent，即得到经过HTML解码的字符串了。
+                var output = temp.innerText || temp.textContent;
+                temp = null;
+                return output;
+            },
+            Cdetail: function (chapterno) {
+                axios.post('FYQueryChapter.do', {
+                    bookno: vindex.Cbookno,
+                    characterno: chapterno,
+                }).then(function (response) {
+                    if (response.data.length <= 0) {
+                        alert("没有更多其他章节了");
+                    } else {
+                        vindex.Cchapterno=chapterno;
+                        vindex.Cchaptername=response.data[0].charactername;
+                        vindex.chaptertext = response.data[0].characterdetail;
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                });
+                this.altertable2(2);
+            },
+            altertable2: function (C) {
+                this.num2 = C;
+            },
+            QChapters: function () {
+                this.altertable2(1);
+                axios.post('querycharacter.do', {
+                    bookno: vindex.Cbookno,
+                }).then(function (response) {
+                    var temp = response.data;
+                    console.log(temp);
+                    vindex.chapters = [];
+                    for (var i = 0; i < temp.length; i++) {//章节目录
+                        if (temp[i].charactername.length > 14)
+                            temp[i].charactername = temp[i].charactername.substring(0, 11) + "..."
+                        vindex.chapters.push({
+                            Cchaptername: temp[i].charactername,
+                            Cchapterno: temp[i].characterno,
+                            url: "chapterdetail.html?bookno=" + vindex.Cbookno + "&chapterNo=" + temp[i].characterno
+                        });
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            checkbookname: function () {
+                if (vindex.bookname.length >= 20) {
+                    vindex.flag[0] = false;
+                    vindex.booknametip = "书名长度应该小于20";
+                } else {
+                    axios.post('CheckBookName.do', {
+                        BookName: vindex.bookname
+                    }).then(function (response) {
+                        var temp = response.data;
+                        console.log(temp);
+                        if (temp==true){
+                            vindex.flag[0] = false;
+                            vindex.booknametip="书名已存在"
+                        } else {
+                            vindex.flag[0] = true;
+                            vindex.booknametip = "";
+                        }
+
+                    });
+
+                }
+            },
+            checkbookintro: function () {
+                if (vindex.bookname.length >= 50) {
+                    vindex.flag[1] = false;
+                    vindex.bookintrotip = "简介长度应该小于50";
+                } else {
+                    vindex.flag[1] = true;
+                    vindex.bookintrotip = "";
+                }
+            },
+            YC: function () {
+                vindex.SS = 0;
+            },
+            S: function () {
+                vindex.SS = 1;
+                axios.post('SS.do', {
+                    inputtext: vindex.inputtext
+                }).then(function (response) {
+                    vindex.books = [];
+                    var flag=0;
+                    var temp = response.data;
+                    console.log(temp);
+                    var flag=0;
+                    for (var i = 0; i < temp.length; i++) {
+                        for (var j = 0; j < vindex.books.length; j++) {
+                            if (vindex.books[j].bookname == temp[i].bookname) {
+                                flag = 1;break;
+                            }
+                        }
+                        if (flag == 0) {
+                            vindex.books.push({
+                                bookimg: temp[i].bookimg,
+                                authorname: temp[i].authorname,
+                                bookname: temp[i].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[i].bookno,
+                                booktype: temp[i].booktype,
+                            });
+                        }
+                        flag=0;
+                    }
+                    console.log(vindex.books);
+                })
+            },
+            /*创建新书*/      submit: function () {
+                if (vindex.bookname != null && vindex.bookname != "")
+                    if (vindex.bookintro != null && vindex.bookintro != "")
+                        if (vindex.booktype != null && vindex.booktype != "") {
+                            if (vindex.flag[0] == true && vindex.flag[1] == true)
+                                axios.post('newbook.do', {
+                                    booktype: vindex.booktype,
+                                    bookname: vindex.bookname,
+                                    bookintro: vindex.bookintro,
+                                    authorno: vindex.authorno,
+                                    authorname: vindex.authorname
+                                }).then(function (response) {
+                                    if (response.data == true) {
+                                        alert("创建成功");
+                                    } else {
+                                        alert("创建失败")
+                                    }
+                                })
+                        } else {
+                            alert("请检查你的书籍类型")
+                        }
+                    else {
+                        alert("请检查你的书籍介绍")
+                    }
+                else {
+                    alert("请检查你的书籍名")
+                }
+
+
+            },
+            altertable1: function (num) {
+                this.num = num;
+
+            },
+            autocomplete: function () {
+                axios.post('AutoComplete.do', {
+                    inputtext: vindex.inputtext
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                        vindex.inputtip = ""
+                        if (str != null && str != "") {//响应成功
+
+                            var result = str.split(",");
+                            var childs = "";
+                            //遍历结果集，将结果集中的每一条数据用一个div显示，把所有的div放入到childs中
+                            for (var i = 0; i < result.length; i++) {
+                                childs += "<br><div style='border-radius:60px;'onclick='Write(this)' onmouseout='recoverColorwhenMouseout(this)' onmouseover='changeColorwhenMouseover(this)'>" + result[i] + "</div>";
+                            }
+                            //把childs 这div集合放入到下拉提示框的父div中，上面我们以获取了
+                            vindex.inputtip = childs + "<br>";
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        }
+
+    });
+
+
+    function changeColorwhenMouseover(tag) {
+        tag.style.color = "red";
+    }//鼠标移入事件
+    function recoverColorwhenMouseout(tag) {
+        tag.style.color = "black";
+    }//鼠标移出事件
+    function Write(tag) {
+        vindex.inputtip = null
+        vindex.inputtext = tag.innerHTML;
+    }//补全输入框
+</script>
+
+
+</body>
+</html>
+
+

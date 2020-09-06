@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录或注册</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <style>
+        ul li {
+            display: inline-block;
+            border: 1px solid dodgerblue;
+            height: 60px;
+            width: 500px;
+            text-align: center;
+            border-radius: 40px;
+        }
+
+        .active {
+            background-color: limegreen;
+        }
+        body{
+            background:url(images/loginbg.jpg) ;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app" >
+    <nav class="nav nav-tabs navbar-fixed-top navbar-inverse navbar" role="navigation"><!--导航栏-->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-1  col-xs-1"><a href="index.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">首页</font></h3></a></div>
+                <div class="col-md-1 col-xs-1"><a href="books.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">书库</font></h3></a></div>
+                <div class="col-md-2  col-xs-2"><a href="authorexist.do" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">作家专区</font></h3></a></div>
+                <div class="col-md-6 col-xs-6">
+
+                    <div class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <input type="text" name="text" id="text" @keyup="autocomplete" v-model="inputtext"
+                                   class="form-control" placeholder="找人、找书" size="50"
+                                   style="height: 50px;border-radius:40px;"/>
+                            <button @click="S" class="btn btn-success"
+                                    style="outline:none;height: 50px; border-radius:50%;border: none;">搜索
+                            </button>
+                        </div>
+                        <div id="tips" v-show="inputtip!=''&&inputtext!=''" v-html="inputtip"
+                             style="border-radius:40px; background-color: white; position: absolute; z-index: 800; display: none; width: 420px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 col-xs-1 "><a href="LoginAndRegister.html" style=" text-decoration:none;"><img
+                        :src="headimg" :title="headtitle" class="img-circle" width="63px" height="63px"/></a></div>
+                <div class="col-md-1 col-xs-1 " v-if="readername!=''"><a :href="'Mydetail.html?readername='+(readername)"
+                                                                         style=" text-decoration:none;"><h5><font
+                        color="white" face="华文行楷"><br>{{readername}}</font></h5></a></div>
+            </div>
+        </div>
+    </nav>
+    <br><br><br><br><br><br><br>
+    <div align="center" v-show="SS==0">
+    <form action="#">
+        <input type="text" v-model="myphone" class="form-control"  NAME="phone" placeholder="手机号" size="50" style="height: 50px;width:500px;border-radius:40px;">
+        <br>
+        <input type="password" v-model="mypassword"class="form-control" NAME="password" placeholder="至少三位连续的模糊密码" size="50" style="height: 50px;width:500px;border-radius:40px;">
+        <br>
+        <input type="button" class="form-control" value="找回密码" @click="submit" size="50" style="height: 50px;width:500px;border-radius:40px;background-color:limegreen; ">
+    </form>
+    </div>
+
+
+    <div class="container" v-show="SS==1">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div><br><br><br><br><br><br><br><br>
+                    <button @click="YC" class="btn-success"
+                            style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">隐藏结果
+                    </button>
+                    <h2>搜索结果：</h2>
+                    <h3 v-if="books.length<1">没有搜索结果！</h3>
+                    <div v-for="(book,num) in books">
+                        <a :href="book.bookurl" style=" text-decoration:none;" class="col-md-3">
+                            <img type="image" :src="book.bookimg" width="180px" height="230" :title="book.bookname">
+                            <p>&nbsp;&nbsp;&nbsp;&nbsp;{{book.authorname}}/{{book.booktype}}</p>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var flag = [false, false, false, false]
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            headimg: 'images/humanhead.png',//默认头像
+            readername: '',//昵称
+            headtitle: '登录/注册',
+            inputtext: '',//搜索框内容
+            inputtip: '',//提示内容
+            inputtipshow: '',
+            books: [],
+            SS: 0,
+            num: 1,//选项卡编号
+            headimg:'images/humanhead.png',//默认头像
+            readername:'',//昵称
+            myphone:"",
+            mypassword:""
+        },
+        mounted:function(){//导航栏用户信息
+            axios.post('navsession.do', {}).then(function (response) {//导航栏用户信息
+                if (response.data.length != 0) {vm.readername = response.data.readername;
+                    vm.headimg = response.data.headimg;vm.headtitle = "已登录"}})
+                .catch(function (error) {console.log(error);});
+        },
+        methods: {
+            YC: function () {
+                vm.SS = 0;
+            },
+            S: function () {
+                vm.SS = 1;
+                axios.post('SS.do', {
+                    inputtext: vm.inputtext
+                }).then(function (response) {
+                    vm.books = [];
+                    var temp = response.data;
+                    console.log(temp);
+                    var flag=0;
+                    for (var i = 0; i < temp.length; i++) {
+                        for (var j = 0; j < vm.books.length; j++) {
+                            if (vm.books[j].bookname == temp[i].bookname) {
+                                flag = 1;break;
+                            }
+                        }
+                        if (flag == 0) {
+                            vm.books.push({
+                                bookimg: temp[i].bookimg,
+                                authorname: temp[i].authorname,
+                                bookname: temp[i].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[i].bookno,
+                                booktype: temp[i].booktype,
+                            });
+                        }
+                        flag=0;
+                    }
+                })
+            },
+            submit:function(){
+                axios.post('FindPassword.do', {
+                    phone: vm.myphone,
+                    password:vm.mypassword
+                }).then(function (response) {
+                    var temp = response.data;
+                    console.log(temp);
+                    alert(temp);
+                })
+            },
+
+
+
+
+
+
+            autocomplete: function () {
+                axios.post('AutoComplete.do', {
+                    inputtext: vm.inputtext
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                        vm.inputtip = ""
+                        if (str != null && str != "") {//响应成功
+
+                            var result = str.split(",");
+                            var childs = "";
+                            //遍历结果集，将结果集中的每一条数据用一个div显示，把所有的div放入到childs中
+                            for (var i = 0; i < result.length; i++) {
+                                childs += "<br><div style='border-radius:60px;'onclick='Write(this)' onmouseout='recoverColorwhenMouseout(this)' onmouseover='changeColorwhenMouseover(this)'>" + result[i] + "</div>";
+                            }
+                            //把childs 这div集合放入到下拉提示框的父div中，上面我们以获取了
+                            vm.inputtip = childs + "<br>";
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        }
+    });
+
+    function changeColorwhenMouseover(tag) {
+        tag.style.color = "red";
+    }//鼠标移入事件
+    function recoverColorwhenMouseout(tag) {
+        tag.style.color = "black";
+    }//鼠标移出事件
+    function Write(tag) {
+        vm.inputtip = null
+        vm.inputtext = tag.innerHTML;
+    }//补全输入框
+</script>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/bootstrap.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.dao.PraiseDao">
+    <update id="UpdatePraiseNumber">
+        update abooks set bookpopularity=#{totalNum} where bookno=#{bookno}
+    </update>
+    <update id="ClearBookPosition">
+        update abooks set bookposition=""
+    </update>
+    <update id="ResetBookPosition">
+        update abooks set bookposition=#{bookposition} where bookno=#{bookno}
+    </update>
+    <select id="IndexBooks" resultType="bookVo">
+        select * from  abooks order by bookpopularity desc limit 22
+    </select>
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.AdminDao.AdminUsersDao">
+    <select id="ASelectUsers"  resultType="userVo">
+        select * from ausers limit #{PageNum},#{PageSize}
+    </select>
+    <select id="ASelectOneUsers"  resultType="userVo">
+        select * from ausers
+        <where>
+            <choose>
+                <when test="phone!=null and phone!='' and readername!=null and readername!=''">and phone like "%"#{phone}"%" or readername like "%"#{readername}"%"</when>
+                <otherwise>and 1!=1</otherwise>
+            </choose>
+        </where>
+    </select>
+    <delete id="ADeleteUsers" parameterType="userVo">
+        delete from ausers where id=#{id}
+    </delete>
+    <update id="AUpdateUsers" parameterType="userVo">
+        update ausers set phone=#{phone},password=#{password},readername=#{readername},headimg=#{headimg} where id=#{id}
+    </update>
+</mapper>

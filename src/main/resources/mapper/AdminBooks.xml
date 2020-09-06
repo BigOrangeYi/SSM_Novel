@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.AdminDao.AdminBooksDao">
+    <select id="ASelectBooks"  resultType="bookVo">
+        select * from abooks limit #{PageNum},#{PageSize}
+    </select>
+    <select id="ASelectOneBooks"  resultType="bookVo">
+        select * from abooks
+        <where>
+            <choose>
+                <when test="bookname!=null and bookname!='' and authorname!=null and authorname!=''">and bookname like "%"#{bookname}"%" or authorname like "%"#{authorname}"%"</when>
+                <otherwise>and 1!=1</otherwise>
+            </choose>
+        </where>
+    </select>
+    <delete id="ADeleteBooks" parameterType="bookVo">
+        delete from abooks where bookno=#{bookno}
+    </delete>
+    <update id="AUpdateBooks" parameterType="bookVo">
+        update abooks set authorno=#{authorno},authorname=#{authorname} ,bookname=#{bookname} ,booktype=#{booktype} ,bookimg=#{bookimg} ,bookintro=#{bookintro} ,bookpopularity=#{bookpopularity} ,bookpublish=#{bookpublish} ,bookbirthday=#{bookbirthday} ,bookposition=#{bookposition} where bookno=#{bookno}
+    </update>
+</mapper>

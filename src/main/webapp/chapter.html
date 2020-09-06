@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>书籍目录</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <style type="text/css">
+        textarea{
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+            cursor: pointer;
+            outline:none;
+        }
+
+        li{
+            list-style-type:none;
+            display:inline
+        }
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        body {
+            background: url(images/loginbg.jpg);
+        }
+    </style>
+</head>
+<body>
+<div id="Index">
+    <nav class="nav nav-tabs navbar-fixed-top navbar-inverse navbar" role="navigation"><!--导航栏-->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-1  col-xs-1"><a href="index.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">首页</font></h3></a></div>
+                <div class="col-md-1 col-xs-1"><a href="books.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">书库</font></h3></a></div>
+                <div class="col-md-2  col-xs-2"><a href="authorexist.do" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">作家专区</font></h3></a></div>
+                <div class="col-md-6 col-xs-6">
+
+                    <div class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <input type="text" name="text" id="text" @keyup="autocomplete" v-model="inputtext"
+                                   class="form-control" placeholder="找人、找书" size="50"
+                                   style="height: 50px;border-radius:40px;"/>
+                            <button @click="S" class="btn btn-success"
+                                    style="outline:none;height: 50px; border-radius:50%;border: none;">搜索
+                            </button>
+                        </div>
+                        <div id="tips" v-show="inputtip!=''&&inputtext!=''" v-html="inputtip"
+                             style="border-radius:40px; background-color: white; position: absolute; z-index: 800; display: none; width: 420px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 col-xs-1 "><a href="LoginAndRegister.html" style=" text-decoration:none;"><img
+                        :src="headimg" :title="headtitle" class="img-circle" width="63px" height="63px"/></a></div>
+                <div class="col-md-1 col-xs-1 " v-if="readername!=''"><a :href="'Mydetail.html?readername='+(readername)"
+                                                                         style=" text-decoration:none;"><h5><font
+                        color="white" face="华文行楷"><br>{{readername}}</font></h5></a></div>
+            </div>
+        </div>
+    </nav>
+    <br><br><br> <br><br><br>
+    <div align="center" v-show="SS==0">
+        <div><h3><b>{{bookdetail[0].bookname}}</b></h3></div><hr>
+        <div class="container">
+        <div style="width: 1200px;background-color: white"><!--目录区-->
+            <div class="row">
+                <div class="col-md-8 "><!--目录-->
+                    <br>
+                    <ul>
+                        <li v-for="(chapter,Number) in chapters" class="col-md-4 ">
+                            <a :href="chapter.url">{{chapter.Cname}}</a><br><hr>
+                        </li>
+                        <br v-if="Number%2!=0">
+                    </ul>
+                </div>
+
+
+                <div class="col-md-4 "><!--封面-->
+                    <br>
+                    <ul>
+                    <li><img :src="bookdetail[0].bookimg" style="width: 240px;height: 300px;"></li>
+                    <li><h3><b>{{bookdetail[0].bookname}}</b></h3></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        </div>
+
+    </div>
+
+    <div class="container" v-show="SS==1">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div><br><br><br><br><br><br><br><br>
+                    <button @click="YC" class="btn-success"
+                            style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">隐藏结果
+                    </button>
+                    <h2>搜索结果：</h2>
+                    <h3 v-if="books.length<1">没有搜索结果！</h3>
+                    <div v-for="(book,num) in books">
+                        <a :href="book.bookurl" style=" text-decoration:none;" class="col-md-3">
+                            <img type="image" :src="book.bookimg" width="180px" height="230" :title="book.bookname">
+                            <p>&nbsp;&nbsp;&nbsp;&nbsp;{{book.authorname}}/{{book.booktype}}</p>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
+
+
+<script>
+    /* var  mybookno
+     window.onload=function(){
+         mybookno =GetQueryString("bookno");
+
+     }*/
+
+    window.GetQueryString = function(name)
+    {
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if(r!=null)return  unescape(r[2]); return null;
+
+    }
+
+    var vindex = new Vue({
+        el: '#Index',
+        data: { books: [],
+            SS: 0,
+            headimg: 'images/humanhead.png',//默认头像
+            readername: '',//昵称
+            headtitle: '登录/注册',
+            inputtext: '',//搜索框内容
+            inputtip: '',//提示内容
+            inputtipshow: '',
+            bookno: '',//书籍号
+            bookdetail: [],
+
+            count:4,
+            newpl:'',
+            chapters:[]//章节名
+
+        },
+
+        mounted: function () {
+
+            axios.post('navsession.do', {}).then(function (response) {//导航栏用户信息
+
+                if (response.data.length != 0) {
+                    vindex.readername = response.data.readername;
+                    vindex.headimg = response.data.headimg;
+                    vindex.headtitle = "已登录"
+                }
+            })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            this.GetQueryString("bookno");
+
+        },
+        methods: {
+            YC: function () {
+                vindex.SS = 0;
+            },
+            S: function () {
+                vindex.SS = 1;
+                axios.post('SS.do', {
+                    inputtext: vindex.inputtext
+                }).then(function (response) {
+                    vindex.books = [];
+                    var flag=0;
+                    var temp = response.data;
+                    console.log(temp);
+                    var flag=0;
+                    for (var i = 0; i < temp.length; i++) {
+                        for (var j = 0; j < vindex.books.length; j++) {
+                            if (vindex.books[j].bookname == temp[i].bookname) {
+                                flag = 1;break;
+                            }
+                        }
+                        if (flag == 0) {
+                            vindex.books.push({
+                                bookimg: temp[i].bookimg,
+                                authorname: temp[i].authorname,
+                                bookname: temp[i].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[i].bookno,
+                                booktype: temp[i].booktype,
+                            });
+                        }
+                        flag=0;
+                    }
+                    console.log(vindex.books);
+                })
+            },
+            Chracterdetail:function(){
+                window.location.href="chapter.html?bookno="+vindex.bookno;
+            },
+            addnum:function(){
+                this.count+=3;
+            },
+            subnum:function(){
+                this.count=3;
+            },
+            addpl:function(){
+                if(vindex.newpl!=null&&vindex.newpl!="")
+                    axios.post('addcomment.do', {//添加评论
+                        readername:vindex.readername,
+                        headimg:vindex.headimg,
+                        commenttext:vindex.newpl,
+                        bookno:vindex.bookno
+                    })
+                        .then(function (response) {
+
+                            if (response.data=== "添加成功") {
+                                alert("添加成功");
+                                window.location.reload();
+                            }else if(response.data==="未登录")alert("未登录！不可评论");
+                            else alert("添加失败")
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+            },
+
+            autocomplete: function () {//自动补全
+                vindex.inputtip = "";
+                axios.post('AutoComplete.do', {
+                    inputtext: vindex.inputtext
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                        vindex.inputtip = ""
+                        if (str != null && str != "") {//响应成功
+
+                            var result = str.split(",");
+                            var childs = "";
+                            //遍历结果集，将结果集中的每一条数据用一个div显示，把所有的div放入到childs中
+                            for (var i = 0; i < result.length; i++) {
+                                childs += "<br><div style='border-radius:60px;'onclick='Write(this)' onmouseout='recoverColorwhenMouseout(this)' onmouseover='changeColorwhenMouseover(this)'>" + result[i] + "</div>";
+                            }
+                            //把childs 这div集合放入到下拉提示框的父div中，上面我们以获取了
+                            vindex.inputtip = childs + "<br>";
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            GetQueryString: function (name) {
+
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)
+                    axios.post('bookdetail.do', {
+                        bookno:unescape(r[2])
+                    })
+                        .then(function (response) {
+
+                            var temp = response.data;console.log(temp)
+                            vindex.bookno=temp[0].bookno;
+                            vindex.bookdetail.push({
+                                bookno:temp[0].bookno,
+                                bookimg: temp[0].bookimg,
+                                authorname: temp[0].authorname,
+                                booktype: temp[0].booktype,
+                                bookname: temp[0].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[0].bookno,
+                                bookpopularity:temp[0].bookpopularity,
+                                bookintro:temp[0].bookintro.substring(0,100)+"...."
+                            });
+                        }).catch(function (error) {
+                        console.log(error);
+                    }),
+
+
+
+                axios.post('querycharacter.do', {
+                    bookno:unescape(r[2]),
+                }).then(function (response) {
+                    var temp=response.data;
+                    console.log(temp);
+                    for (var i = 0; i <temp.length ; i++) {//章节
+                        if(temp[i].charactername.length>14)
+                            temp[i].charactername=temp[i].charactername.substring(0,11)+"..."
+                        vindex.chapters.push({
+                            Cname:temp[i].charactername,
+                            Cno:temp[i].characterno,
+                            url:"chapterdetail.html?bookno="+unescape(r[2])+"&chapterNo="+temp[i].characterno
+                           /* Cdetail:temp[i].characterdetail*/
+                        });}
+                }).catch(function (error) {console.log(error);});},
+
+        } });
+
+
+
+
+    function changeColorwhenMouseover(tag) {
+        tag.style.color = "red";
+    }//鼠标移入事件
+    function recoverColorwhenMouseout(tag) {
+        tag.style.color = "black";
+    }//鼠标移出事件
+    function Write(tag) {
+        vindex.inputtip = null
+        vindex.inputtext = tag.innerHTML;
+    }//补全输入框
+
+
+</script>
+
+<script src="js/bootstrap.js"></script>
+
+</body>
+</html>

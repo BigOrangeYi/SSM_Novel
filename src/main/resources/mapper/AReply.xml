@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ay.AdminDao.AdminReplyDao">
+    <select id="ASelectReplys"  resultType="replyVo">
+        select * from acomments limit #{PageNum},#{PageSize}
+    </select>
+    <select id="ASelectOneReplys"  resultType="replyVo">
+        select * from acomments
+        <where>
+            <choose>
+                <when test="readername!=null and readername!=''">and readername like "%"#{readername}"%"</when>
+                <otherwise>and 1!=1</otherwise>
+            </choose>
+        </where>
+    </select>
+    <delete id="ADeleteReplys" parameterType="replyVo">
+        delete from acomments where commentid=#{commentid}
+    </delete>
+    <update id="AUpdateReplys" parameterType="replyVo">
+        update acomments set replyid=#{replyid},readername=#{readername},replyname=#{replyname},commentdate=#{commentdate},commenttext=#{commenttext}, bookno=#{bookno}, headimg=#{headimg} where commentid=#{commentid}
+    </update>
+</mapper>

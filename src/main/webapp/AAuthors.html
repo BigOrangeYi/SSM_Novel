@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理作者</title>
+    <style type="text/css">
+        table
+        {
+            border-collapse: collapse;
+            margin: 0 auto;
+            text-align: center;
+        }
+        table td, table th
+        {
+            border: 1px solid #cad9ea;
+            color: #666;
+            height: 30px;
+            width: 300px;
+        }
+        table thead th
+        {
+            background-color: #CCE8EB;
+            width: 100px;
+        }
+        table tr:nth-child(odd)
+        {
+            background: #fff;
+        }
+        table tr:nth-child(even)
+        {
+            background: #F5FAFA;
+        }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<div id="Index">
+    <br><br><br>
+    <div align="center"><a href="AdminIndex.html">返回管理首页</a><h3>作者管理</h3></div>
+    <input type="text" v-model="SearchText"><input type="button" value="搜索" @click="Search">
+    <table v-if="SearchResult!=null&&SearchResult!=''">
+        <tr><td colspan="5" @click="SearchResult=''">收起结果</td></tr>
+        <tr ><td>authorno</td><td>phone</td><td>authorname</td><td colspan="2">操作</td></tr>
+        <tr v-for="(Result,ResultNum) in SearchResult">
+            <td contenteditable="true" @blur="Result.authorno=$event.target.innerText">{{Result.authorno}}</td>
+            <td contenteditable="true" @blur="Result.phone=$event.target.innerText">{{Result.phone}}</td>
+            <td contenteditable="true" @blur="Result.authorname=$event.target.innerText">{{Result.authorname}}</td>
+            <td @click="ADeleteAuthors(Result.authorno)">确定删除</td>
+            <td @click="AUpdateAuthors(Result.authorno,Result.phone,Result.authorname)">保存修改</td>
+        </tr>
+    </table>
+    <br>   <br>   <br>   <br>
+    <table>
+        <tr ><td>authorno</td><td>phone</td><td>authorname</td><td colspan="2">操作</td></tr>
+        <tr v-for="(Author,AuthorNum) in Authors">
+            <td >{{Author.authorno}}</td>
+            <td contenteditable="true" @blur="Author.phone=$event.target.innerText">{{Author.phone}}</td>
+            <td contenteditable="true" @blur="Author.authorname=$event.target.innerText">{{Author.authorname}}</td>
+            <td @click="ADeleteAuthors(Author.authorno)">确定删除</td>
+            <td @click="AUpdateAuthors(Author.authorno,Author.phone,Author.authorname)">保存修改</td>
+        </tr>
+    </table>
+    <br>
+    <div align="center">
+        <a @click="Pre">上一页</a>
+        第<input v-model="VPageNum" type="number" size="3">页<input type="button" value="跳转" @click="todo(VPageNum)" >
+        <a @click="Next">下一页</a>
+    </div>
+</div>
+<script>
+    var PageNum=1;
+    var PageSize=6;
+    $(function () {
+        vindex.ASelectAuthors(PageNum,PageSize);
+    });
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+            SearchText:'',
+            SearchResult:[],
+            VPageNum:'',
+            Authors:[]
+        },
+        mounted: function (){},
+        methods:{
+            Search:function(){
+                if (vindex.SearchText != null && vindex.SearchText != '') {
+                    vindex.SearchResult=[];
+                    axios.post('ASelectOneAuthors.do', {
+                        phone:vindex.SearchText,
+                        authorname:vindex.SearchText
+                    }).then(function (response) {
+                        var temp = response.data;
+                        console.log(temp);
+                        for (var i = 0; i < temp.length; i++)
+                            vindex.SearchResult.push({
+                                authorno: temp[i].authorno,
+                                phone: temp[i].phone,
+                                authorname: temp[i].authorname,
+                            })
+                    })
+                }
+            },
+            Pre:function(){
+                if (PageNum > 1)
+                {
+                    vindex.VPageNum=--PageNum;
+                    vindex.ASelectAuthors(PageNum,PageSize);
+                }
+            },
+            Next:function(){
+                if (vindex.Authors.length == 6)
+                {
+                    vindex.VPageNum=++PageNum;
+                    vindex.ASelectAuthors(PageNum,PageSize);
+                }
+            },
+            todo:function(Num){
+                if (Num > 0)
+                {
+                    PageNum=Num;
+                    vindex.ASelectAuthors(PageNum,PageSize);
+                }
+            },
+            AUpdateAuthors:function(authorno,phone,authorname){
+                axios.post('AUpdateAuthors.do', {
+                    authorno:authorno,
+                    phone:phone,
+                    authorname:authorname,
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("修改成功");
+                        vindex.ASelectAuthors(PageNum,PageSize);
+                    }
+                    else alert("修改失败")
+                });
+
+            },
+            ADeleteAuthors:function(authorno){
+                axios.post('ADeleteAuthors.do', {authorno:authorno}).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("删除成功");
+                        vindex.ASelectAuthors(PageNum,PageSize);
+                    }
+                    else alert("删除失败")
+                });
+            },
+            ASelectAuthors:function (PageNum,PageSize) {
+                vindex.Authors=[];
+                axios.post('ASelectAuthors.do', {
+                    PageNum:PageNum,
+                    PageSize:PageSize
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    for (var i = 0; i < temp.length; i++)
+                        vindex.Authors.push({
+                            authorno: temp[i].authorno,
+                            phone: temp[i].phone,
+                            authorname: temp[i].authorname,
+                        });
+                })
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>个人中心</title>
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+
+<script src="js/vue.js"></script>
+<script src="js/axios.js"></script>
+<script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+<style>
+a {
+	color: black;
+	text-decoration: none;
+}
+
+ul{
+    list-style:none;margin:0;
+}
+li {
+	list-style-type: none;
+    display:inline
+}
+
+body {
+	background: url(images/loginbg.jpg);
+}
+</style>
+</head>
+<body>
+
+	<div id="Index">
+		<nav class="nav nav-tabs navbar-fixed-top navbar-inverse navbar"
+			role="navigation">
+			<!--导航栏-->
+			<div class="container">
+				<div class="row">
+					<div class="col-md-1  col-xs-1">
+						<a href="index.html" style="text-decoration: none;"><h3>
+								<font color="white" face="华文行楷">首页</font>
+							</h3></a>
+					</div>
+					<div class="col-md-1 col-xs-1">
+						<a href="books.html" style="text-decoration: none;"><h3>
+								<font color="white" face="华文行楷">书库</font>
+							</h3></a>
+					</div>
+					<div class="col-md-2  col-xs-2">
+						<a href="authorexist.do" style="text-decoration: none;"><h3>
+								<font color="white" face="华文行楷">作家专区</font>
+							</h3></a>
+					</div>
+					<div class="col-md-6 col-xs-6">
+
+						<div class="navbar-form navbar-left">
+							<div class="form-group">
+								<input type="text" name="text" id="text" @keyup="autocomplete"
+									v-model="inputtext" class="form-control" placeholder="找人、找书"
+									size="50" style="height: 50px; border-radius: 40px;" />
+								<button @click="S" class="btn btn-success"
+									style="outline: none; height: 50px; border-radius: 50%; border: none;">搜索
+								</button>
+							</div>
+							<div id="tips" v-show="inputtip!=''&&inputtext!=''"
+								v-html="inputtip"
+								style="border-radius: 40px; background-color: white; position: absolute; z-index: 800; display: none; width: 420px;">
+
+							</div>
+						</div>
+					</div>
+					<div class="col-md-1 col-xs-1 ">
+						<a href="LoginAndRegister.html" style="text-decoration: none;"><img
+							:src="headimg" :title="headtitle" class="img-circle" width="63px"
+							height="63px" /></a>
+					</div>
+					<div class="col-md-1 col-xs-1 " v-if="readername!=''">
+						<a :href="'Mydetail.html?readername='+(readername)"
+							style="text-decoration: none;"><h5>
+								<font color="white" face="华文行楷"><br>{{readername}}</font>
+							</h5></a>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container" v-show="SS==0">
+			<br> <br> <br> <br> <br> <br> <br>
+			<br>
+			<div class="row">
+				<div class="col-md-4  ">
+					<br>
+					<ul>
+						<li><font face="华文行楷" size="6"><a @click="altertable(d1)">更换头像</a></font><br> <br>
+						<br> <br></li>
+						<li><font face="华文行楷" size="6"><a @click="altertable(d2)">昵称/密码</a></font><br> <br>
+						<br> <br></li>
+						<li><font face="华文行楷" size="6"><a @click="altertable(d3)">我的书架</a></font><br> <br>
+						<br> <br></li>
+						<li><font face="华文行楷" size="6"><a @click="authorAdmin(d4)">作者后台</a></font><br> <br>
+                        <br> <br></li>
+                        <li><font face="华文行楷" size="6"><a @click="DeleteUser">注销账户</a></font><br> <br>
+						<br> <br></li>
+						<li><font face="华文行楷" size="6"><a @click="back">退出登录</a></font><br> <br>
+						<br> <br></li>
+					</ul>
+				</div>
+				<div class="col-md-8  ":id="d1"v-if="d1==num">
+					<br> <br> <br> <br> <br> <br> <br>
+					<div class="form-group">
+						<form action="upload.do" method="post"enctype="multipart/form-data">
+							<div class="input-group">
+							<input  class="form-control"type="file" name="photo">
+							<label class="input-group-btn"> <input type="submit"id="i-check" value="上传头像" class="btn btn-primary"></label>
+							</div>
+						</form>
+					</div>
+
+				</div>
+				<div class="col-md-8  ":id="d2"v-if="d2==num">
+					<br> <br> <br> <br> <br> <br> <br>
+
+						<div class="form-group">
+							<form action="#">
+								<input type="text" class="form-control" @change="Newname" v-model="newname" size="50"placeholder="新昵称"
+									   style="height: 50px;width:500px;border-radius:40px;">
+                                <div style="color:red;display: inline-block" v-show="newnametip!=''">{{newnametip}}</div>
+								<br>
+								<input type="password" v-model="newpass" @change="Newpass" class="form-control"  size="50"placeholder="新密码"
+									   style="height: 50px;width:500px;border-radius:40px;">
+                                <div style="color:red;display: inline-block" v-show="newpasstip!=''">{{newpasstip}}</div>
+								<br><br>
+								<input type="button" @click="NewNameAndNewPass" class="form-control"  size="50"value="确定更改"
+									   style="height: 50px;width:500px;border-radius:40px;background-color:limegreen; ">
+							</form>
+						</div>
+				</div>
+                <div class="col-md-8  ":id="d3"v-if="d3==num" >
+                    <h2  v-if="books.length<=0">你的书架里没有书！</h2>
+                    <table class="table table-hover" v-show="books.length>0">
+                        <thead>
+                        <tr>
+                            <th>封面</th>
+                            <th>书名</th>
+                            <th>作者</th>
+                            <th>阅读</th>
+                            <th>移出书架</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(book,booknum) in books" v-if="booknum<count">
+                            <td><img :src="book.bookimg" width="74px" height="100px"></td>
+                            <td><br><h3><font  face="华文行楷">{{book.bookname}}</font></h3></td>
+                            <td><br><h3><font  face="华文行楷">{{book.authorname}}</font></h3></td>
+                            <td><br><button @click="bookcontent(book.bookno)" class="btn-success"style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">阅读</button></td>
+                            <td><br><button @click="deletebookshelf(book.shelfno)" class="btn-danger"style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">移出书架</button></td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+
+                        <div align="center">
+                    <h5 @click="addnum" v-if="books.length>count"><a>展开更多</a></h5>
+                    <h5 @click="subnum" v-if="books.length<=count&&books.length>0"><a>收起</a></h5>
+                        </div>
+                </div>
+                <div class="col-md-8  ":id="d4"v-if="d4==num">
+                    <br> <br> <br> <br> <br> <br> <br>
+
+                    <div class="form-group">
+                        <form action="#">
+                            <input type="text" class="form-control" @change="Bname" v-model="bname" size="50"placeholder="笔名"
+                                   style="height: 50px;width:500px;border-radius:40px;">
+                            <div style="color:red;display: inline-block" v-show="bnametip!=''">{{bnametip}}</div>
+
+                            <br><br>
+                            <input type="button" @click="addauthor" class="form-control"  size="50"value="成为作者"
+                                   style="height: 50px;width:500px;border-radius:40px;background-color:limegreen; ">
+                        </form>
+                    </div>
+                </div>
+
+			</div>
+
+
+
+
+
+		</div>
+		<div class="container" v-show="SS==1">
+
+			<div class="row">
+				<div class="col-md-12">
+					<div><br><br><br><br><br><br><br><br>
+						<button @click="YC" class="btn-success"
+								style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">隐藏结果
+						</button>
+						<h2>搜索结果：</h2>
+						<h3 v-if="books2.length<1">没有搜索结果！</h3>
+						<div v-for="(book,num) in books2">
+							<a :href="book.bookurl" style=" text-decoration:none;" class="col-md-3">
+								<img type="image" :src="book.bookimg" width="180px" height="230" :title="book.bookname">
+								<p>&nbsp;&nbsp;&nbsp;&nbsp;{{book.authorname}}/{{book.booktype}}</p>
+							</a>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+        var flag = [false, false]
+        var b=[false]//笔名符合条件
+    var vindex = new Vue({
+        el: '#Index',
+        data: { books2: [],
+			SS: 0,
+            headimg: 'images/humanhead.png',//默认头像
+            readername: '',//昵称
+            headtitle: '登录/注册',
+            inputtext: '',//搜索框内容
+            inputtip: '',//提示内容
+            inputtipshow: '',
+            newname:'',//新昵称
+            newnametip:'',//新昵称格式提示
+            newpasstip:'',//新密码格式提示
+            newpass:'',//新密码
+			d1:1,d2:2,d3:3,d4:4,
+			num:1,
+            count:4,
+            bname:'',
+            bnametip:'',
+            books:[]
+        },
+        mounted: function () {
+
+            axios.post('navsession.do', {}).then(function (response) {//导航栏用户信息
+                    if (response.data.length != 0) {vindex.readername = response.data.readername;
+                        vindex.headimg = response.data.headimg;vindex.headtitle = "已登录"}})
+                .catch(function (error) {console.log(error);});
+            axios.post('Mybookshelf.do', {}).then(function (response) {
+                if (response.data.length != 0) {
+                    var temp=response.data;
+                    console.log(temp);
+                    for (var i = 0; i <temp.length ; i++)
+                    vindex.books.push({
+                        bookno:temp[i].bookno,
+                        bookimg: temp[i].bookimg,
+                        authorname: temp[i].authorname,
+                        bookname: temp[i].bookname,
+                        shelfno: temp[i].shelfno,
+                    });
+                }})
+                .catch(function (error) {console.log(error);});
+           
+        },
+        methods: {
+            DeleteUser:function(){
+                if (confirm("确定注销？")) {
+                    axios.post('DeleteUser.do', {
+                    }).then(function (response) {
+                        var temp = response.data;
+                        console.log(temp);
+                        if (temp==true){
+                            alert("注销成功");
+                            window.location.href="index.html";
+                        } else {
+                            alert("注销失败");
+                        }
+
+                    })
+                }
+
+            },
+			YC: function () {
+				vindex.SS = 0;
+			},
+            S: function () {
+                vindex.SS = 1;
+                axios.post('SS.do', {
+                    inputtext: vindex.inputtext
+                }).then(function (response) {
+                    vindex.books2 = [];
+                    var temp = response.data;
+                    console.log(temp);
+                    var flag=0;
+                    for (var i = 0; i < temp.length; i++) {
+                        for (var j = 0; j < vindex.books.length; j++) {
+                            if (vindex.books2[j].bookname == temp[i].bookname) {
+                                flag = 1;break;
+                            }
+                        }
+                        if (flag == 0) {
+                            vindex.books2.push({
+                                bookimg: temp[i].bookimg,
+                                authorname: temp[i].authorname,
+                                bookname: temp[i].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[i].bookno,
+                                booktype: temp[i].booktype,
+                            });
+                        }
+                        flag=0;
+                    }
+                })
+            },
+        	//增加作者
+			addauthor:function(){
+                vindex.Bname;
+				if(b[0]==true){
+				axios.post('addauthor.do', {authorname:vindex.bname}).then(function (response) {
+					if (response.data==true) {
+						alert("恭喜你成为一名作者");
+						window.location.href="author.html"
+					}
+					else {
+						alert("操作失败");
+					}}).catch(function (error) {console.log(error);}); }
+			else {alert("请先检查您的输入");b[0]==false;}
+
+			},
+            //笔名验证
+            Bname:function(){
+                var  re =/^[\u4E00-\u9FA5A-Za-z0-9]{2,4}$/
+                if (!re.test(vindex.bname)|| vindex.bname == null || vindex.bname == '') {
+					vindex.bnametip = '二到四位笔名格式：中文、英文、数字但不包括下划线等符号';
+                    b[0]=false;
+                }
+                else{
+					axios.post('bnameexist.do', {authorname:vindex.bname}).then(function (response) {
+						if (response.data==true) {
+							console.log(response.data);
+							vindex.bnametip='笔名已存在';b[0]=false;
+						}
+						else {vindex.bnametip='';b[0]=true;}}).catch(function (error) {console.log(error);});
+
+              }
+            },
+            //作者后台
+            authorAdmin:function(num){
+                axios.post('authorexist2.do', {authorname:null}).then(function (response) {
+					var temp=response.data;
+                	console.log(temp);
+                    if (response.data==true) {
+
+                       window.location.href="author.html";
+                    }
+                    else {
+                        alert("你不是作者！赶快成为作者吧！");
+                        vindex.num=num;
+
+                    }
+                })
+                    .catch(function (error) {console.log(error);});
+            },
+            //查看目录
+            addnum:function(){
+                this.count+=4;
+            },
+            subnum:function(){
+                this.count=4;
+            },
+            bookcontent:function(bookno){
+          window.location.href="bookdetail.html?bookno="+bookno;
+        },
+            //移出书架
+            deletebookshelf:function(shelfno){
+              if(shelfno!=null&&shelfno!=''){
+                  axios.post('deletebookshelf.do', {shelfno:shelfno}).then(function (response) {
+                      if (response.data==true) {
+                          alert("已移出")
+                      }
+                  else alert("移出失败")})
+                      .catch(function (error) {console.log(error);});
+              }
+            },
+            Newname:function(){
+                var reg = /^(?![a-zA-Z]{6,10}$)(?![a-z0-9]{6,10}$)(?![0-9A-Z]{6,10}$)[a-zA-Z0-9]{6,10}$/
+                var  re =/^[\u4E00-\u9FA5A-Za-z0-9]{2,4}$/
+                if (!re.test(this.newname)|| this.newname == null || this.newname == '') {
+                    this.newnametip = '二到四位昵称格式：中文、英文、数字但不包括下划线等符号';
+                    flag[0] = false
+                }
+                else{
+                    flag[0] = true;
+                    this.newnametip = ''
+                }
+            },
+            Newpass:function(){
+                var reg = /^(?![a-zA-Z]{6,10}$)(?![a-z0-9]{6,10}$)(?![0-9A-Z]{6,10}$)[a-zA-Z0-9]{6,10}$/
+                var  re =/^[\u4E00-\u9FA5A-Za-z0-9]{2,4}$/
+                if (!reg.test(this.newpass) || this.newpass == null || this.newpass == '') {
+                    this.newpasstip = '6至10位密码至少包含(1个大写字母，1个小写字母，1个数字),不能含有中文字符';
+                    flag[1] = false
+                } else {
+                    flag[1] = true;
+                    this.newpasstip = ''
+                }
+            },
+            NewNameAndNewPass:function(){//改昵称或者密码
+                if(flag[0]==true&&flag[1]==true)
+                {
+                    if(flag[0]==false)vindex.newname=""
+                    if(flag[1]==false)vindex.newpass=""
+                    axios.post('alterpassword.do', {newreadername:vindex.newname,newpassword:vindex.newpass}).then(function (response) {
+                    if(response.data=="修改成功")
+                    {
+                        if(flag[1]==true&&flag[0]==true)alert("昵称和密码更改成功");
+                    }
+                    else alert("更改失败！请检查输入");
+                }).catch(function (error) {console.log(error);});}
+            },
+        	altertable:function(num){
+        	this.num=num;
+			},
+			back:function(){
+				axios.post('back.do', {}).then(function (response) {//退出登录
+				if(response.data)window.location.href="LoginAndRegister.html";
+				}).catch(function (error) {console.log(error);});
+			},
+            autocomplete: function () {
+                axios.post('AutoComplete.do', {
+                    inputtext: vindex.inputtext
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                        vindex.inputtip = ""
+                        if (str != null && str != "") {//响应成功
+
+                            var result = str.split(",");
+                            var childs = "";
+                            //遍历结果集，将结果集中的每一条数据用一个div显示，把所有的div放入到childs中
+                            for (var i = 0; i < result.length; i++) {
+                                childs += "<br><div style='border-radius:60px;'onclick='Write(this)' onmouseout='recoverColorwhenMouseout(this)' onmouseover='changeColorwhenMouseover(this)'>" + result[i] + "</div>";
+                            }
+                            //把childs 这div集合放入到下拉提示框的父div中，上面我们以获取了
+                            vindex.inputtip = childs + "<br>";
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+
+        }
+
+    });
+
+    function changeColorwhenMouseover(tag) {
+        tag.style.color = "red";
+    }//鼠标移入事件
+    function recoverColorwhenMouseout(tag) {
+        tag.style.color = "black";
+    }//鼠标移出事件
+    function Write(tag) {
+        vindex.inputtip = null
+        vindex.inputtext = tag.innerHTML;
+    }//补全输入框
+</script>
+
+</body>
+</html>
+
+

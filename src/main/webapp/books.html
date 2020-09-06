@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>书籍</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+    <style>
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        ul{
+            list-style:none;margin:0;
+        }
+        li {
+            list-style-type: none;
+            display:inline
+        }
+
+        body {
+            background: url(images/loginbg.jpg);
+        }
+    </style>
+</head>
+<body>
+
+<div id="Index">
+    <nav class="nav nav-tabs navbar-fixed-top navbar-inverse navbar"
+         role="navigation">
+        <!--导航栏-->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-1  col-xs-1">
+                    <a href="index.html" style="text-decoration: none;"><h3>
+                        <font color="white" face="华文行楷">首页</font>
+                    </h3></a>
+                </div>
+                <div class="col-md-1 col-xs-1">
+                    <a href="books.html" style="text-decoration: none;"><h3>
+                        <font color="white" face="华文行楷">书库</font>
+                    </h3></a>
+                </div>
+                <div class="col-md-2  col-xs-2">
+                    <a href="authorexist.do" style="text-decoration: none;"><h3>
+                        <font color="white" face="华文行楷">作家专区</font>
+                    </h3></a>
+                </div>
+                <div class="col-md-6 col-xs-6">
+
+                    <div class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <input type="text" name="text" id="text" @keyup="autocomplete"
+                                   v-model="inputtext" class="form-control" placeholder="找人、找书"
+                                   size="50" style="height: 50px; border-radius: 40px;" />
+                            <button @click="S" class="btn btn-success"
+                                    style="outline: none; height: 50px; border-radius: 50%; border: none;">搜索
+                            </button>
+                        </div>
+                        <div id="tips" v-show="inputtip!=''&&inputtext!=''"
+                             v-html="inputtip"
+                             style="border-radius: 40px; background-color: white; position: absolute; z-index: 800; display: none; width: 420px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 col-xs-1 ">
+                    <a href="LoginAndRegister.html" style="text-decoration: none;"><img
+                            :src="headimg" :title="headtitle" class="img-circle" width="63px"
+                            height="63px" /></a>
+                </div>
+                <div class="col-md-1 col-xs-1 " v-if="readername!=''">
+                    <a :href="'Mydetail.html?readername='+(readername)"
+                       style="text-decoration: none;"><h5>
+                        <font color="white" face="华文行楷"><br>{{readername}}</font>
+                    </h5></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container" v-show="SS==0"><!--主体-->
+        <br><br><br><br><br><br>
+        <div class="row">
+            <div class="col-md-8  "><!--书籍区-->
+                <div style="height: 450px">
+                <table class="table table-hover" v-show="books.length>0" style="width: 700px">
+                    <thead>
+                    <tr>
+                        <th>封面</th>
+                        <th>书名</th>
+                        <th>类型</th>
+                        <th>作者</th>
+                        <th>阅读</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(book,booknum) in books" >
+                        <td><img :src="book.bookimg" width="74px" height="100px"></td>
+                        <td><br><h3><font  face="华文行楷">{{book.bookname}}</font></h3></td>
+                        <td><br><h3><font  face="华文行楷">{{book.booktype}}</font></h3></td>
+                        <td><br><h3><font  face="华文行楷">{{book.authorname}}</font></h3></td>
+                        <td><br><button @click="readbook(book.bookurl)" class="btn-success"style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">阅读</button></td>
+
+                    </tr>
+
+                    </tbody>
+                </table>
+                </div>
+                <br><br>
+                <div align="center">
+                    <div>
+                        <ul class="pagination">
+                            <li ><a href="#"  onclick="prePage()">«</a></li>
+                            <li ><a href="#"onclick="setPageNum(1)">1</a></li>
+                            <li><a href="#" onclick="setPageNum(2)">2</a></li>
+                            <li><a href="#" onclick="setPageNum(3)">3</a></li>
+                            <li><a href="#" onclick="nextPage()">»</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4  "><br><br><br><br><br><br>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('')">全部</button>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('现代')">现代</button>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('社科')">社科</button>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('奇幻')">奇幻</button><br><br>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('玄幻')">玄幻</button>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('武侠')">武侠</button>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('言情')">言情</button>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('古典')">古典</button><br><br>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('穿越')">穿越</button>
+                <button type="button" class="btn btn-primary btn-lg " onclick="setType('科幻')">科幻</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="container" v-show="SS==1">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div><br><br><br><br><br><br><br><br>
+                    <button @click="YC" class="btn-success"
+                            style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">隐藏结果
+                    </button>
+                    <h2>搜索结果：</h2>
+                    <h3 v-if="books2.length<1">没有搜索结果！</h3>
+                    <div v-for="(book,num) in books2">
+                        <a :href="book.bookurl" style=" text-decoration:none;" class="col-md-3">
+                            <img type="image" :src="book.bookimg" width="180px" height="230" :title="book.bookname">
+                            <p>&nbsp;&nbsp;&nbsp;&nbsp;{{book.authorname}}/{{book.booktype}}</p>
+                        </a>
+                       <!-- <br v-if="num/3!=0">-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+var PageNum=1;
+var PageSize=4;
+var type="";
+$(function() {
+queryallbooks();
+});
+function queryallbooks() {
+    axios.post('AllBooks.do', {
+        PageNum:PageNum,
+        PageSize:PageSize,
+        type:type
+    }).then(function (response) {
+        var temp=response.data
+        for (var i = 0; i <temp.length ; i++) {
+            vindex.books.push({
+                bookimg:temp[i].bookimg,
+                authorname:temp[i].authorname,
+                booktype:temp[i].booktype,
+                bookname:temp[i].bookname,
+                bookurl:'bookdetail.html?bookno='+temp[i].bookno
+            });}
+    })
+        .catch(function (error) {console.log(error);});
+
+}
+function prePage() {
+    if(PageNum>1){
+    PageNum-=1;
+    vindex.books=[];
+    queryallbooks();}
+}
+function nextPage() {
+    if(vindex.books.length==PageSize)
+    {PageNum+=1;
+    vindex.books=[];
+    queryallbooks();}
+}
+function setPageNum(num) {
+
+    PageNum=num;
+    vindex.books=[];
+    queryallbooks();
+}
+function setType(stype) {
+    type=stype;
+    PageNum=1;
+    vindex.books=[];
+    queryallbooks();
+}
+
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+            books2: [],
+            SS: 0,
+            headimg: 'images/humanhead.png',//默认头像
+            readername: '',//昵称
+            headtitle: '登录/注册',
+            inputtext: '',//搜索框内容
+            inputtip: '',//提示内容
+            inputtipshow: '',
+            books:[],
+            nums:'',
+            pagenum:''
+
+        },
+        mounted: function () {
+
+            axios.post('navsession.do', {}).then(function (response) {//导航栏用户信息
+                if (response.data.length != 0) {vindex.readername = response.data.readername;
+                    vindex.headimg = response.data.headimg;vindex.headtitle = "已登录"}})
+                .catch(function (error) {console.log(error);});
+
+
+        },
+        methods: {
+            YC: function () {
+                vindex.SS = 0;
+            },
+            S: function () {
+                vindex.SS = 1;
+                axios.post('SS.do', {
+                    inputtext: vindex.inputtext
+                }).then(function (response) {
+                    vindex.books2 = [];
+                    var temp = response.data;
+                    console.log(temp);
+                    var flag=0;
+                    for (var i = 0; i < temp.length; i++) {
+                            vindex.books2.push({
+                                bookimg: temp[i].bookimg,
+                                authorname: temp[i].authorname,
+                                bookname: temp[i].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[i].bookno,
+                                booktype: temp[i].booktype,
+                            });
+                    }
+
+                })
+            },
+            readbook:function (bookurl) {
+                     window.location.href=bookurl;
+                    },
+            autocomplete: function () {
+                axios.post('AutoComplete.do', {
+                    inputtext: vindex.inputtext
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                        vindex.inputtip = ""
+                        if (str != null && str != "") {//响应成功
+
+                            var result = str.split(",");
+                            var childs = "";
+                            //遍历结果集，将结果集中的每一条数据用一个div显示，把所有的div放入到childs中
+                            for (var i = 0; i < result.length; i++) {
+                                childs += "<br><div style='border-radius:60px;'onclick='Write(this)' onmouseout='recoverColorwhenMouseout(this)' onmouseover='changeColorwhenMouseover(this)'>" + result[i] + "</div>";
+                            }
+                            //把childs 这div集合放入到下拉提示框的父div中，上面我们以获取了
+                            vindex.inputtip = childs + "<br>";
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+
+        }
+
+    });
+
+    function changeColorwhenMouseover(tag) {
+        tag.style.color = "red";
+    }//鼠标移入事件
+    function recoverColorwhenMouseout(tag) {
+        tag.style.color = "black";
+    }//鼠标移出事件
+    function Write(tag) {
+        vindex.inputtip = null
+        vindex.inputtext = tag.innerHTML;
+    }//补全输入框
+</script>
+
+</body>
+</html>
+
+

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <!-- 加载注解驱动 -->
+    <mvc:annotation-driven/>
+    <mvc:default-servlet-handler></mvc:default-servlet-handler>
+
+
+    <!--注册数据验证器-->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"></property>
+    </bean>
+    <!--注册注解驱动，使用类型转换服务，同时使用验证器-->
+    <mvc:annotation-driven conversion-service="conversionService" validator="validator"/>
+
+
+    <!-- 自定义RequestMappingHandlerAdapter -->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+
+<!--文件上传处理器-->
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean"/>
+<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    <property name="defaultEncoding" value="utf-8"></property>
+    <property name="maxInMemorySize" value="1048576"></property>
+</bean>
+
+
+    <!--配置　显示ViewResolver(视图解析器)-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--<property name="prefix" value="/"/>-->
+        <property name="suffix" value=".html"/>
+    </bean>
+    <!--配置BeanNameViewResolver类型的视图解释器-->
+<!--    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+        <property name="order" value="5"/>
+    </bean>
+    <bean id="login" class="org.springframework.web.servlet.view.RedirectView">
+        <property name="url" value="/LoginAndRegister.html"/>
+    </bean>-->
+
+
+    <!-- 扫描controller(后端控制器),并且扫描其中的注解-->
+    <context:component-scan base-package="com.ay.controller"/>
+    <context:component-scan base-package="com.ay.service.impl"/>
+    <context:component-scan base-package="com.ay.AOP"/>
+    <context:component-scan base-package="com.ay.AdminController"/>
+    <context:component-scan base-package="com.ay.AdminService"/>
+    <!--开启AOP-->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+    <bean id="parameterVerify" class="com.ay.AOP.ParameterVerify"/>
+    <bean id="logInterceptor" class="com.ay.AOP.LogInterceptor"/>
+    <bean id="AOP_loh" class="com.ay.AOP.AOP_log"/>
+
+    <!--静态资源放行策略-->
+    <mvc:resources mapping="/img/**" location="/img/" />
+    <mvc:resources mapping="/images/**" location="/images/" />
+    <mvc:resources mapping="/css/**" location="/css/" />
+    <mvc:resources mapping="/js/**" location="/js/" />
+    <mvc:resources mapping="/fonts/**" location="/fonts/" />
+
+
+    <!--定义事务管理器-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--开启事务注解-->
+    <tx:annotation-driven transaction-manager="txManager"/>
+    <!--编写事务通知-->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRED" isolation="DEFAULT" read-only="false"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--编写AOP让spring将事务切入到目标点-->
+    <aop:config>
+        <!--定义切入点-->
+        <aop:pointcut id="txPoincut" expression="execution(* com.ay.service.impl.*.*(..))"/>
+        <!--将事务通知与切入点结合-->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoincut"/>
+    </aop:config>
+
+
+
+
+
+
+
+</beans>

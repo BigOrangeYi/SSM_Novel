@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理日志</title>
+    <style type="text/css">
+        table
+        {
+            border-collapse: collapse;
+            margin: 0 auto;
+            text-align: center;
+        }
+        table td, table th
+        {
+            border: 1px solid #cad9ea;
+            color: #666;
+            height: 30px;
+            width: 300px;
+        }
+        table thead th
+        {
+            background-color: #CCE8EB;
+            width: 100px;
+        }
+        table tr:nth-child(odd)
+        {
+            background: #fff;
+        }
+        table tr:nth-child(even)
+        {
+            background: #F5FAFA;
+        }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<div id="Index">
+    <br><br><br>
+    <div align="center"><a href="AdminIndex.html">返回管理首页</a><h3>日志管理</h3></div>
+    <br>   <br>   <br>   <br>
+    <table>
+        <tr>
+            <td @click="altertable('users_log')">
+                用户日志
+            </td>
+            <td @click="altertable('authors_log')">
+                作者日志
+            </td>
+            <td @click="altertable('chapters_log')">
+                章节日志
+            </td>
+            <td @click="altertable('bookshelfs_log')">
+                书架日志
+            </td>
+            <td @click="altertable('books_log')">
+                书籍日志
+            </td>
+            <td @click="altertable('comments_log')">
+                评论日志
+            </td>
+        </tr>
+    </table>
+    <br> <br> <br>
+    <table>
+        <tr ><td>logid</td>
+            <td colspan="2">aactions</td>
+            <td>logdate</td>
+            <td >操作</td></tr>
+        <tr v-for="(Log,LogNum) in Logs">
+            <td>{{Log.logid}}</td>
+            <td colspan="2" v-if="tablename=='chapters_log'"><textarea style="height: 150px;weight:150px;">{{Log.aactions}}</textarea></td>
+            <td colspan="2" v-if="tablename!='chapters_log'">{{Log.aactions}}</td>
+            <td >{{Log.logdate}}</td>
+            <td @click="ADeleteLogs(Log.logid)">确定删除</td>
+        </tr>
+    </table>
+    <br>
+    <div align="center">
+        <a @click="Pre">上一页</a>
+        第<input v-model="VPageNum" type="number" size="3">页<input type="button" value="跳转" @click="todo(VPageNum)" >
+        <a @click="Next">下一页</a>
+    </div>
+</div>
+<script>
+    var PageNum=1;
+    var PageSize=6;
+    $(function () {
+        vindex.ASelectLogs(PageNum,PageSize);
+    });
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+
+            VPageNum:'',
+            Logs:[],
+            tablename:"users_log"
+        },
+        mounted: function (){},
+        methods:{
+altertable:function(tablename){
+vindex.tablename=tablename;
+vindex.ASelectLogs(PageNum,PageSize);
+},
+            Pre:function(){
+                if (PageNum > 1)
+                {
+                    vindex.VPageNum=--PageNum;
+                    vindex.ASelectLogs(PageNum,PageSize);
+                }
+            },
+            Next:function(){
+                if (vindex.Logs.length == 6)
+                {
+                    vindex.VPageNum=++PageNum;
+                    vindex.ASelectLogs(PageNum,PageSize);
+                }
+            },
+            todo:function(Num){
+                if (Num > 0)
+                {
+                    PageNum=Num;
+                    vindex.ASelectLogs(PageNum,PageSize);
+                }
+            },
+
+            ADeleteLogs:function(logid){
+                axios.post('ADeleteLogs.do', {
+                    logid:logid,
+                    tablename:vindex.tablename
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("删除成功");
+                        vindex.ASelectLogs(PageNum,PageSize);
+                    }
+                    else alert("删除失败")
+                });
+            },
+            ASelectLogs:function (PageNum,PageSize) {
+                vindex.Logs=[];
+                axios.post('ASelectLogs.do', {
+                    PageNum:PageNum,
+                    PageSize:PageSize,
+                    tablename:vindex.tablename
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    for (var i = 0; i < temp.length; i++)
+                        vindex.Logs.push({
+                            logid:temp[i].logid,
+                            aactions:temp[i].aactions,
+                            logdate:temp[i].logdate
+                        });
+                })
+            }
+        }
+    });
+</script>
+</body>
+</html>

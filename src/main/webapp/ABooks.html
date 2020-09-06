@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理书籍</title>
+    <style type="text/css">
+        table
+        {
+            border-collapse: collapse;
+            margin: 0 auto;
+            text-align: center;
+        }
+        table td, table th
+        {
+            border: 1px solid #cad9ea;
+            color: #666;
+            height: 30px;
+            width: 300px;
+        }
+        table thead th
+        {
+            background-color: #CCE8EB;
+            width: 100px;
+        }
+        table tr:nth-child(odd)
+        {
+            background: #fff;
+        }
+        table tr:nth-child(even)
+        {
+            background: #F5FAFA;
+        }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<div id="Index">
+    <br><br><br>
+    <div align="center"><a href="AdminIndex.html">返回管理首页</a><h3>书籍管理</h3></div>
+    <input type="text" v-model="SearchText"><input type="button" value="搜索" @click="Search">
+    <table v-if="SearchResult!=null&&SearchResult!=''">
+       <tr><td colspan="14" @click="SearchResult=''">收起结果</td></tr>
+        <tr ><td>bookno</td>
+            <td>authorno</td>
+            <td>authorname</td>
+            <td>bookname</td>
+            <td>booktype</td>
+            <td>bookimg</td>
+            <td>bookimg_path</td>
+            <td>bookintro</td>
+            <td>bookpopularity</td>
+            <td>bookpublish</td>
+            <td>bookbirthday</td>
+            <td>bookposition</td>
+            <td colspan="2">操作</td></tr>
+        <tr v-for="(Result,ResultNum) in SearchResult">
+            <td >{{Result.bookno}}</td>
+            <td contenteditable="true" @blur="Result.authorno=$event.target.innerText">{{Result.authorno}}</td>
+            <td contenteditable="true" @blur="Result.authorname=$event.target.innerText">{{Result.authorname}}</td>
+            <td contenteditable="true" @blur="Result.bookname=$event.target.innerText">{{Result.bookname}}</td>
+            <td contenteditable="true" @blur="Result.booktype=$event.target.innerText">{{Result.booktype}}</td>
+            <td><img :src="Result.bookimg" width="100px" height="115px"></td>
+            <td contenteditable="true" @blur="Result.bookimg=$event.target.innerText">{{Result.bookimg}}</td>
+            <td ><textarea style="height: 115px;" v-model="Result.bookintro">{{Result.bookintro}}</textarea></td>
+            <td contenteditable="true" @blur="Result.bookpopularity=$event.target.innerText">{{Result.bookpopularity}}</td>
+            <td contenteditable="true" @blur="Result.bookpublish=$event.target.innerText">{{Result.bookpublish}}</td>
+            <td contenteditable="true" @blur="Result.bookbirthday=$event.target.innerText">{{Result.bookbirthday}}</td>
+            <td contenteditable="true" @blur="Result.bookposition=$event.target.innerText">{{Result.bookposition}}</td>
+            <td @click="ADeleteBooks(Result.bookno)">确定删除</td>
+            <td @click="AUpdateBooks(Result.bookno,Result.authorno,Result.authorname,Result.bookname,Result.booktype,Result.bookimg,Result.bookintro,Result.bookpopularity,Result.bookpublish,Result.bookbirthday,Result.bookposition)">保存修改</td>
+        </tr>
+    </table>
+    <br>   <br>   <br>   <br>
+    <table>
+        <tr ><td>bookno</td>
+            <td>authorno</td>
+            <td>authorname</td>
+            <td>bookname</td>
+            <td>booktype</td>
+            <td>bookimg</td>
+            <td>bookimg_path</td>
+            <td>bookintro</td>
+            <td>bookpopularity</td>
+            <td>bookpublish</td>
+            <td>bookbirthday</td>
+            <td>bookposition</td><td colspan="2">操作</td></tr>
+        <tr v-for="(Book,BookNum) in Books">
+            <td>{{Book.bookno}}</td>
+            <td contenteditable="true" @blur="Book.authorno=$event.target.innerText">{{Book.authorno}}</td>
+            <td contenteditable="true" @blur="Book.authorname=$event.target.innerText">{{Book.authorname}}</td>
+            <td contenteditable="true" @blur="Book.bookname=$event.target.innerText">{{Book.bookname}}</td>
+            <td contenteditable="true" @blur="Book.booktype=$event.target.innerText">{{Book.booktype}}</td>
+            <td><img :src="Book.bookimg" width="100px" height="115px"></td>
+            <td contenteditable="true" @blur="Book.bookimg=$event.target.innerText">{{Book.bookimg}}</td>
+            <td ><textarea style="height: 115px;" v-model="Book.bookintro">{{Book.bookintro}}</textarea></td>
+            <td contenteditable="true" @blur="Book.bookpopularity=$event.target.innerText">{{Book.bookpopularity}}</td>
+            <td contenteditable="true" @blur="Book.bookpublish=$event.target.innerText">{{Book.bookpublish}}</td>
+            <td contenteditable="true" @blur="Book.bookbirthday=$event.target.innerText">{{Book.bookbirthday}}</td>
+            <td contenteditable="true" @blur="Book.bookposition=$event.target.innerText">{{Book.bookposition}}</td>
+            <td @click="ADeleteBooks(Book.bookno)">确定删除</td>
+            <td @click="AUpdateBooks(Book.bookno,Book.authorno,Book.authorname,Book.bookname,Book.booktype,Book.bookimg,Book.bookintro,Book.bookpopularity,Book.bookpublish,Book.bookbirthday,Book.bookposition)">保存修改</td>
+        </tr>
+    </table>
+    <br>
+    <div align="center">
+        <a @click="Pre">上一页</a>
+        第<input v-model="VPageNum" type="number" size="3">页<input type="button" value="跳转" @click="todo(VPageNum)" >
+        <a @click="Next">下一页</a>
+    </div>
+</div>
+<script>
+    var PageNum=1;
+    var PageSize=6;
+    $(function () {
+        vindex.ASelectBooks(PageNum,PageSize);
+    });
+    var vindex = new Vue({
+        el: '#Index',
+        data: {
+            SearchText:'',
+            SearchResult:[],
+            VPageNum:'',
+            Books:[]
+        },
+        mounted: function (){},
+        methods:{
+            Search:function(){
+                if (vindex.SearchText != null && vindex.SearchText != '') {
+                    vindex.SearchResult=[];
+                    axios.post('ASelectOneBooks.do', {
+                        bookname:vindex.SearchText,
+                        authorname:vindex.SearchText
+                    }).then(function (response) {
+                        var temp = response.data;
+                        console.log(temp);
+                        for (var i = 0; i < temp.length; i++)
+                            vindex.SearchResult.push({
+                                bookno:temp[i].bookno,
+                                authorno:temp[i].authorno,
+                                authorname:temp[i].authorname,
+                                bookname:temp[i].bookname,
+                                booktype:temp[i].booktype,
+                                bookimg:temp[i].bookimg,
+                                bookintro:temp[i].bookintro,
+                                bookpopularity:temp[i].bookpopularity,
+                                bookpublish:temp[i].bookpublish,
+                                bookbirthday:temp[i].bookbirthday,
+                                bookposition:temp[i].bookposition
+                            })
+                    })
+                }
+            },
+            Pre:function(){
+                if (PageNum > 1)
+                {
+                    vindex.VPageNum=--PageNum;
+                    vindex.ASelectBooks(PageNum,PageSize);
+                }
+            },
+            Next:function(){
+                if (vindex.Books.length == 6)
+                {
+                    vindex.VPageNum=++PageNum;
+                    vindex.ASelectBooks(PageNum,PageSize);
+                }
+            },
+            todo:function(Num){
+                if (Num > 0)
+                {
+                    PageNum=Num;
+                    vindex.ASelectBooks(PageNum,PageSize);
+                }
+            },
+            AUpdateBooks:function(bookno,authorno,authorname,bookname,booktype,bookimg,bookintro,bookpopularity,bookpublish,bookbirthday,bookposition){
+                axios.post('AUpdateBooks.do', {
+                    bookno:bookno,
+                    authorno:authorno,
+                    authorname:authorname,
+                    bookname:bookname,
+                    booktype:booktype,
+                    bookimg:bookimg,
+                    bookintro:bookintro,
+                    bookpopularity:bookpopularity,
+                    bookpublish:bookpublish,
+                    bookbirthday:bookbirthday,
+                    bookposition:bookposition
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("修改成功");
+                        vindex.ASelectBooks(PageNum,PageSize);
+                    }
+                    else alert("修改失败")
+                });
+
+            },
+            ADeleteBooks:function(bookno){
+                axios.post('ADeleteBooks.do', {bookno:bookno}).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    if (temp==1){
+                        alert("删除成功");
+                        vindex.ASelectBooks(PageNum,PageSize);
+                    }
+                    else alert("删除失败")
+                });
+            },
+            ASelectBooks:function (PageNum,PageSize) {
+                vindex.Books=[];
+                axios.post('ASelectBooks.do', {
+                    PageNum:PageNum,
+                    PageSize:PageSize
+                }).then(function (response) {
+                    var temp = response.data;console.log(temp);
+                    for (var i = 0; i < temp.length; i++)
+                        vindex.Books.push({
+                            bookno:temp[i].bookno,
+                            authorno:temp[i].authorno,
+                            authorname:temp[i].authorname,
+                            bookname:temp[i].bookname,
+                            booktype:temp[i].booktype,
+                            bookimg:temp[i].bookimg,
+                            bookintro:temp[i].bookintro,
+                            bookpopularity:temp[i].bookpopularity,
+                            bookpublish:temp[i].bookpublish,
+                            bookbirthday:temp[i].bookbirthday,
+                            bookposition:temp[i].bookposition
+                        });
+                })
+            }
+        }
+    });
+</script>
+</body>
+</html>

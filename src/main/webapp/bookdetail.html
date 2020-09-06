@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>书籍详情</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <style type="text/css">
+ textarea{
+              width: 100%;
+              height: 100%;
+              border: none;
+              resize: none;
+              cursor: pointer;
+              outline:none;
+          }
+        
+li{
+list-style-type:none 
+}
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        body {
+            background: url(images/loginbg.jpg);
+        }
+    </style>
+</head>
+<body>
+<div id="Index">
+    <nav class="nav nav-tabs navbar-fixed-top navbar-inverse navbar" role="navigation"><!--导航栏-->
+        <div class="container">
+            <div class="row">
+                <div class="col-md-1  col-xs-1"><a href="index.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">首页</font></h3></a></div>
+                <div class="col-md-1 col-xs-1"><a href="books.html" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">书库</font></h3></a></div>
+                <div class="col-md-2  col-xs-2"><a href="authorexist.do" style=" text-decoration:none;"><h3><font
+                        color="white" face="华文行楷">作家专区</font></h3></a></div>
+                <div class="col-md-6 col-xs-6">
+
+                    <div class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <input type="text" name="text" id="text" @keyup="autocomplete" v-model="inputtext"
+                                   class="form-control" placeholder="找人、找书" size="50"
+                                   style="height: 50px;border-radius:40px;"/>
+                            <button @click="S" class="btn btn-success"
+                                    style="outline:none;height: 50px; border-radius:50%;border: none;">搜索
+                            </button>
+                        </div>
+                        <div id="tips" v-show="inputtip!=''&&inputtext!=''" v-html="inputtip"
+                             style="border-radius:40px; background-color: white; position: absolute; z-index: 800; display: none; width: 420px;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 col-xs-1 "><a href="LoginAndRegister.html" style=" text-decoration:none;"><img
+                        :src="headimg" :title="headtitle" class="img-circle" width="63px" height="63px"/></a></div>
+                <div class="col-md-1 col-xs-1 " v-if="readername!=''"><a :href="'Mydetail.html?readername='+(readername)"
+                                                                         style=" text-decoration:none;"><h5><font
+                        color="white" face="华文行楷"><br>{{readername}}</font></h5></a></div>
+            </div>
+        </div>
+    </nav>
+    <br><br><br> <br><br><br>
+    <div align="center" v-show="SS==0">
+        <div style="width: 1200px;height: 353px;background-color: white"><!--书籍介绍区-->
+            <ul><br>
+                    <li><img :src="bookdetail[0].bookimg" style="width: 240px;height: 300px;float: left;"></li>
+                    <li>
+<table><tr><td width="800px">
+    <table>
+     <tr><p><h3><b>{{bookdetail[0].bookname}}</b></h3></tr>
+     <tr>{{bookdetail[0].authorname}}&nbsp;著</p></tr>
+    <tr><p>人气：{{bookdetail[0].bookpopularity}}</p></tr>
+    <tr><p>类型：{{bookdetail[0].booktype}}</p></tr>
+    <tr><p width="500px" height="70px">简介：{{bookdetail[0].bookintro}}</p></tr><br>
+        <tr><button class="btn-danger" style="outline:none;width: 150px;height: 50px;border-radius: 50px;border: 1px solid;" @click="addbook">加入书架</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button class="btn-success"style="outline:none;width: 150px;height: 50px;border-radius: 50px;border: 1px solid;"@click="Chracterdetail">立即阅读</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button @click="praise" class="btn btn-success" style="outline:none;height: 50px; border-radius:50%;border: none;">点赞</button>
+        </tr>
+</table>
+</td>
+</tr>
+</table></li></ul>
+
+
+
+        </div>
+<hr>
+        <div style="width: 1200px;background-color: white"><!--评论区-->
+
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2  "><br><h3><b>评论：</b></h3></div>
+                    <div class="col-md-8  "><br><input type="text" v-model="newpl"  style="height: 50px;width:780px;border-radius:40px;"class="form-control" width="500px"></div>
+                    <div class="col-md-2  "><br><button @click="addpl" class="btn-success"style="outline:none;width: 150px;height: 50px;border-radius: 50px;border: 1px solid;">发表评论</button></div>
+                </div>
+                <hr>
+
+            <div v-if="bookcomments1.length<=0">还没有评论！赶快评论一下吧 </div>
+                <div v-for="(bookcomment1,num) in bookcomments1" v-if="num<count">
+                    <!--一级评论-->
+                    <div :id="bookcomment1.commentid1" v-if="showreplyid==bookcomment1.commentid1">
+                    <div class="row" >
+                        <div class="col-md-2"  ><br><b>回复：{{bookcomment1.readername1}}</b></div>
+                    </div>
+                    <div class="row" >
+                        <div class=" col-md-10  "><br><input type="text" v-model="newreply"  style="height: 50px;width:950px;border-radius:40px;"class="form-control" width="500px"></div>
+                        <div class="col-md-2  "><br><button @click="replycmt(bookcomment1.commentid1,bookcomment1.readername1)" class="btn-success"style="outline:none;width: 150px;height: 50px;border-radius: 50px;border: 1px solid;">发表回复</button></div>
+                    </div>
+                        <br>
+                    </div>
+                     <div class="row" >
+                        <div class="col-md-2  "><img :src="bookcomment1.headimg1"  class="img-circle" width="40px" height="40px"/>{{bookcomment1.readername1}}:</div>
+                        <div class="col-md-6 "><br>
+                        <textarea  readonly="true"style="width: 900px;height: 75px">{{bookcomment1.commenttext1}}</textarea>
+                        </div>
+                        <div class="col-md-2  ">{{bookcomment1.commentdate1}}</div>
+                        <div class="col-md-1 " @click="showreplyid==''?showreplyid=bookcomment1.commentid1:showreplyid=''" >回复</div>
+                         <div class="col-md-1 "style="disabled:false;" @click="querycomments2(bookcomment1.commentid1)">查看回复</div>
+                    </div>
+                    <br>
+                    <!--二级评论-->
+                <div >
+                    <div v-for="(bookcomment2,num2) in bookcomments2" >
+                        <div class="row" v-if="bookcomment2.replyid==bookcomment1.commentid1">
+                        <div class="col-md-4  "><img :src="bookcomment2.headimg2"  class="img-circle" width="40px" height="40px"/>{{bookcomment2.readername2}}:</div>
+                        <div class="col-md-4 "><br>
+                            <textarea  readonly="true"style="width: 700px;height: 75px">{{bookcomment2.commenttext2}}</textarea>
+                        </div>
+                        <div class="col-md-4  ">{{bookcomment2.commentdate2}}</div>
+<!--                        <div class="col-md-1 " >回复</div>
+                        <div class="col-md-1 " @click="querycomments2(bookcomment2.commentid2)">查看回复</div>-->
+                    </div>
+                    </div>
+                </div>
+                    <br>
+                </div>
+                <h5 @click="addnum" v-if="bookcomments1.length>count"><a>展开更多</a></h5>
+                <h5 @click="subnum" v-if="bookcomments1.length<=count&&bookcomments1.length>4"><a>收起评论</a></h5>
+            </div>
+				<hr>
+
+
+        </div>
+    </div>
+
+    <div class="container" v-show="SS==1">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div><br><br><br><br><br><br><br><br>
+                    <button @click="YC" class="btn-success"
+                            style="outline:none;width: 75px;height: 25px;border-radius: 50px;border: 1px solid;">隐藏结果
+                    </button>
+                    <h2>搜索结果：</h2>
+                    <h3 v-if="books.length<1">没有搜索结果！</h3>
+                    <div v-for="(book,num) in books">
+                        <a :href="book.bookurl" style=" text-decoration:none;" class="col-md-3">
+                            <img type="image" :src="book.bookimg" width="180px" height="230" :title="book.bookname">
+                            <p>&nbsp;&nbsp;&nbsp;&nbsp;{{book.authorname}}/{{book.booktype}}</p>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+
+</div>
+
+
+<script>
+    /* var  mybookno
+     window.onload=function(){
+         mybookno =GetQueryString("bookno");
+
+     }*/
+  
+     window.GetQueryString = function(name)
+     {
+         var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+         var r = window.location.search.substr(1).match(reg);
+         if(r!=null)return  unescape(r[2]); return null;
+
+     }
+
+    var vindex = new Vue({
+        el: '#Index',
+        data: { books: [],
+            SS: 0,
+            headimg: 'images/humanhead.png',//默认头像
+            readername: '',//昵称
+            headtitle: '登录/注册',
+            inputtext: '',//搜索框内容
+            inputtip: '',//提示内容
+            inputtipshow: '',
+            bookno: '',//书籍号
+            bookdetail: [],
+            bookcomments1:[],//一级评论
+            bookcomments2:[],//二级评论
+            count:4,
+            newpl:'',
+            newreply:'',
+            showreplyid:''
+
+        },
+        ceated: function () {
+
+        },
+        mounted: function () {
+        	
+        	axios.post('navsession.do', {}).then(function (response) {//导航栏用户信息
+                
+                if (response.data.length != 0) {
+                    vindex.readername = response.data.readername;
+                    vindex.headimg = response.data.headimg;
+                    vindex.headtitle = "已登录"
+                }
+            })
+                .catch(function (error) {
+                    console.log(error);
+                });
+                this.GetQueryString("bookno");
+
+        },
+        methods: {
+            praise:function(){
+                if (vindex.readername != null&&vindex.readername!=''){
+                    axios.post('praise.do', {
+                        bookno: vindex.bookno
+                    }).then(function (response) {
+                        var temp=response.data;
+                        temp==true?alert("点赞成功"):alert("点赞失败");
+                    })
+                }else {
+                    alert("请先登录");
+                }
+
+            },
+            querycomments2:function(commentid){
+                axios.post('querycomments2.do', {
+                    commentid:commentid
+                }).then(function (response) {
+                    var temp=response.data;
+                    var flag2=0;
+                    console.log("二级评论："+temp);
+                    for (var i = 0; i <temp.length ; i++) {//第二层评论
+                            if (vindex.bookcomments2.length > 0) {
+                                for (var j = 0; j < vindex.bookcomments2.length ; j++) {
+                                    if (vindex.bookcomments2[j].commentid2==temp[i].commentid)
+                                    {
+                                        flag2=1;
+                                    }
+                                }
+                                if (flag2==0)
+                                    vindex.bookcomments2.unshift({
+                                        commentid2:temp[i].commentid,
+                                        bookno2:temp[i].bookno,
+                                        readername2:temp[i].readername,
+                                        commentdate2:temp[i].commentdate,
+                                        commenttext2:temp[i].commenttext,
+                                        headimg2:temp[i].headimg,
+                                        replyid:temp[i].replyid,
+                                        replyname:temp[i].replyname
+                                    });
+                                flag2=0;
+                            }
+                                else{
+                                    vindex.bookcomments2.unshift({
+                            commentid2:temp[i].commentid,
+                            bookno2:temp[i].bookno,
+                            readername2:temp[i].readername,
+                            commentdate2:temp[i].commentdate,
+                            commenttext2:temp[i].commenttext,
+                            headimg2:temp[i].headimg,
+                            replyid:temp[i].replyid,
+                            replyname:temp[i].replyname
+                        });
+                                }
+
+
+                    }
+         
+
+                }).catch(function (error) {console.log(error);});},
+
+            YC: function () {
+                vindex.SS = 0;
+            },
+            S: function () {
+                vindex.SS = 1;
+                axios.post('SS.do', {
+                    inputtext: vindex.inputtext
+                }).then(function (response) {
+                    vindex.books = [];
+                    var flag=0;
+
+                    var temp = response.data;
+                    console.log(temp);
+                    for (var i = 0; i < temp.length; i++) {
+                        for (var j = 0; j < vindex.books.length; j++) {
+                            if (vindex.books[j].bookname == temp[i].bookname) {
+                                flag = 1;break;
+                            }
+                        }
+                        if (flag == 0) {
+                            vindex.books.push({
+                                bookimg: temp[i].bookimg,
+                                authorname: temp[i].authorname,
+                                bookname: temp[i].bookname,
+                                bookurl: 'bookdetail.html?bookno=' + temp[i].bookno,
+                                booktype: temp[i].booktype,
+                            });
+                        }
+                        flag=0;
+                    }
+                    console.log(vindex.books);
+                })
+            },
+            Chracterdetail:function(){
+              window.location.href="chapter.html?bookno="+vindex.bookno;
+            },
+            addnum:function(){
+              this.count+=3;
+            },
+            subnum:function(){
+                this.count=3;
+            },
+            addpl:function(){
+                if(vindex.newpl!=null&&vindex.newpl!="")
+                axios.post('addcomment.do', {//添加评论
+                    readername:vindex.readername,
+                    headimg:vindex.headimg,
+                    commenttext:vindex.newpl,
+                    bookno:vindex.bookno
+                })
+                    .then(function (response) {
+
+                        if (response.data=== "添加成功") {
+                            alert("添加成功");
+                            window.location.reload();
+                        }else if(response.data==="未登录")alert("未登录！不可评论");
+                        else alert("添加失败")
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            replycmt:function(commentid,commentname){
+
+                if(vindex.newreply!=null&&vindex.newreply!="")
+                    axios.post('addreply.do', {//添加回复
+                        readername:vindex.readername,
+                        headimg:vindex.headimg,
+                        commenttext:vindex.newreply,
+                        bookno:vindex.bookno,
+                        replyid:commentid,
+                        replyname:commentname
+
+                    })
+                        .then(function (response) {
+
+                            if (response.data=== "添加成功") {
+                                alert("回复成功");
+                                vindex.showreplyid=""
+                                vindex.querycomments2(commentid);
+                            }else if(response.data==="未登录")alert("未登录！不可评论");
+                            else {alert("回复失败");vindex.showreplyid="";}
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+            },
+            autocomplete: function () {//自动补全
+                vindex.inputtip = "";
+                axios.post('AutoComplete.do', {
+                    inputtext: vindex.inputtext
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                        vindex.inputtip = ""
+                        if (str != null && str != "") {//响应成功
+
+                            var result = str.split(",");
+                            var childs = "";
+                            //遍历结果集，将结果集中的每一条数据用一个div显示，把所有的div放入到childs中
+                            for (var i = 0; i < result.length; i++) {
+                                childs += "<br><div style='border-radius:60px;'onclick='Write(this)' onmouseout='recoverColorwhenMouseout(this)' onmouseover='changeColorwhenMouseover(this)'>" + result[i] + "</div>";
+                            }
+                            //把childs 这div集合放入到下拉提示框的父div中，上面我们以获取了
+                            vindex.inputtip = childs + "<br>";
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            GetQueryString: function (name) {
+
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null)
+                axios.post('bookdetail.do', {
+                    bookno:unescape(r[2])
+                })
+                    .then(function (response) {
+
+                        var temp = response.data;console.log(temp)
+                        vindex.bookno=temp[0].bookno;
+                        vindex.bookdetail.push({
+                        	bookno:temp[0].bookno,
+                            bookimg: temp[0].bookimg,
+                            authorname: temp[0].authorname,
+                            booktype: temp[0].booktype,
+                            bookname: temp[0].bookname,
+                            bookurl: 'bookdetail.html?bookno=' + temp[0].bookno,
+                            bookpopularity:temp[0].bookpopularity,
+                            bookintro:temp[0].bookintro.substring(0,100)+"...."
+                        });
+                    }).catch(function (error) {
+                    console.log(error);
+                }),
+
+
+                    axios.post('querycomments1.do', {
+                        bookno:unescape(r[2]),
+                    }).then(function (response) {
+                        var temp=response.data;
+                        console.log(temp);
+                        for (var i = 0; i <temp.length ; i++) {//第一层评论
+
+                            vindex.bookcomments1.push({
+                                commentid1:temp[i].commentid,
+                                bookno1:temp[i].bookno,
+                                readername1:temp[i].readername,
+                                commentdate1:temp[i].commentdate,
+                                commenttext1:temp[i].commenttext,
+                                replyid1:temp[i].replyid,
+                                headimg1:temp[i].headimg,
+                            });}
+
+                    }).catch(function (error) {console.log(error);});},
+
+
+
+            addbook: function () {//加入书架
+                axios.post('addbook.do', {
+                    bookno: vindex.bookdetail[0].bookno,
+                    bookname:vindex.bookdetail[0].bookname,
+                    authorname:vindex.bookdetail[0].authorname,
+                    bookimg:vindex.bookdetail[0].bookimg
+                })
+                    .then(function (response) {
+                        var str = response.data;
+                       if(str==true)alert("加入成功！")
+                        else alert("加入失败！可能已经加入书架了")
+                    }).catch(function (error) {console.log(error);});},
+                    
+
+        } });
+
+
+
+
+    function changeColorwhenMouseover(tag) {
+        tag.style.color = "red";
+    }//鼠标移入事件
+    function recoverColorwhenMouseout(tag) {
+        tag.style.color = "black";
+    }//鼠标移出事件
+    function Write(tag) {
+        vindex.inputtip = null
+        vindex.inputtext = tag.innerHTML;
+    }//补全输入框
+
+
+</script>
+
+<script src="js/bootstrap.js"></script>
+
+</body>
+</html>
